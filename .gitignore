@@ -1,0 +1,50 @@
+# Isaac Sim install (local only, do not commit)
+app/
+downloads/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Node docx build artifacts
+thesis/_docx_build/
+thesis/.venv/
+
+# Logs & caches
+logs/
+*.log
+ov-cache/
+kit-cache/
+
+# RL checkpoints & tensorboard
+runtime/outputs/**/model_*.pt
+runtime/outputs/**/events.out.tfevents.*
+
+# Runtime caches & generated scenes (do not commit)
+runtime/xdg-cache/
+runtime/xdg-config/
+runtime/scenes/
+
+# Runtime outputs: ignore all, then whitelist canonical result dirs
+runtime/outputs/*
+!runtime/outputs/phase3_rtx_pra_comparison_fixed_tcp_repeatability_v1/
+!runtime/outputs/phase3_material_sensitivity_sgw/
+!runtime/outputs/lab_dynamic_smoke_v1/
+!runtime/outputs/lab_sl_distance_v1/
+runtime/outputs/**/repeat_*/
+runtime/outputs/**/*_timeseries.csv
+runtime/outputs/**/batch_summary.txt
+runtime/outputs/**/*_run.log
+
+# Isaac Lab upstream clone (separate git)
+IsaacLab/
+
+# Editor / OS
+.DS_Store
+.env
+.env.*
+.~lock.*
+**/.~lock.*

@@ -1,0 +1,17 @@
+comparison,x_feature,y_feature,rho,p_value,n,trend_label,interpretation
+distance_vs_rtx,target_distance_m,amplitude_max_mean,0.08571428571428573,0.8717434402332361,6,no_clear_monotonic_relation,RTX GMO amplitude max distance trend
+distance_vs_rtx,target_distance_m,amplitude_mean_mean,1.0,0.0,6,monotonic_positive,RTX GMO amplitude mean distance trend
+distance_vs_rtx,target_distance_m,primary_sgw_peak_mean,0.08571428571428573,0.8717434402332361,6,no_clear_monotonic_relation,RTX primary signal-way peak distance trend
+distance_vs_rtx,target_distance_m,primary_sgw_early_energy_mean,-0.7714285714285715,0.07239650145772596,6,monotonic_negative,RTX primary signal-way early energy distance trend
+distance_vs_rtx,target_distance_m,ref_sgw_peak_mean,0.08571428571428573,0.8717434402332361,6,no_clear_monotonic_relation,RTX reference signal-way peak distance trend
+distance_vs_rtx,target_distance_m,all_sgw_peak_mean_mean,0.2,0.704,6,no_clear_monotonic_relation,RTX mean-of-peaks across signal ways distance trend
+distance_vs_pra,target_distance_m,pra_rir_peak_abs_value,-1.0,0.0,6,monotonic_negative,PRA RIR abs peak distance trend
+distance_vs_pra,target_distance_m,pra_early_energy_50ms,-1.0,0.0,6,monotonic_negative,PRA early energy 50 ms distance trend
+distance_vs_pra,target_distance_m,pra_direct_delay_ms,1.0,0.0,6,monotonic_positive,PRA direct delay ms distance trend
+distance_vs_pra,target_distance_m,pra_rt60_measured,1.0,0.0,6,monotonic_positive,PRA RT60 distance trend
+rtx_vs_pra,amplitude_max_mean,rir_peak_abs_value,-0.08571428571428573,0.8717434402332361,6,no_clear_monotonic_relation,Cross-model trend characterization; not waveform validation.
+rtx_vs_pra,amplitude_max_mean,early_energy_50ms,-0.08571428571428573,0.8717434402332361,6,no_clear_monotonic_relation,Cross-model trend characterization; not waveform validation.
+rtx_vs_pra,amplitude_mean_mean,direct_delay_ms,1.0,0.0,6,trend_agreement,Cross-model trend characterization; not waveform validation.
+rtx_vs_pra,primary_sgw_peak_mean,rir_peak_abs_value,-0.08571428571428573,0.8717434402332361,6,no_clear_monotonic_relation,Cross-model trend characterization; not waveform validation.
+rtx_vs_pra,primary_sgw_early_energy_mean,early_energy_50ms,0.7714285714285715,0.07239650145772596,6,trend_agreement,Cross-model trend characterization; not waveform validation.
+rtx_vs_pra,ref_sgw_peak_mean,direct_delay_ms,0.08571428571428573,0.8717434402332361,6,no_clear_monotonic_relation,Cross-model trend characterization; not waveform validation.

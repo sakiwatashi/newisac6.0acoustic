@@ -1,0 +1,267 @@
+{
+  "amplitude_max_max": 5171.82373046875,
+  "amplitude_max_min": 4821.37255859375,
+  "baseline_ee_position_m": [
+    0.720000147819519,
+    0.16000041365623474,
+    0.6500003337860107
+  ],
+  "baseline_sensor_forward_m": [
+    0.9999994888148376,
+    -0.0009457007788730335,
+    -0.0003577989669632235
+  ],
+  "baseline_sensor_position_m": [
+    0.800000106924706,
+    0.1599247575939249,
+    0.6499717098686537
+  ],
+  "baseline_tcp_radius_xy_m": 0.8158284741114499,
+  "captured_samples": 62,
+  "csv_path": "/home/lab109/song/isaacsim6.0/runtime/outputs/phase3_material_sensitivity_sgw/rtx_smoke_cond_C/official_asset_ur10_fixed_tcp_distance_sweep_timeseries.csv",
+  "end_effector_frame": "/World/ur10/ee_link",
+  "experiment_mode": "fixed_tcp_moving_target",
+  "geometry_passport": {
+    "default_material_condition": "B",
+    "distance_tolerance_m": 0.05,
+    "distance_waypoints_m": [
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0
+    ],
+    "ee_frame": "ee_link",
+    "ee_target_position_m": [
+      0.7200000000000001,
+      0.16,
+      0.65
+    ],
+    "experiment_mode": "fixed_tcp_moving_target",
+    "passport_id": "formal_ur10_fixed_tcp_reference",
+    "passport_version": "v1.0",
+    "pra_absorption_label": "medium_absorption",
+    "pra_absorption_value": 0.35,
+    "pra_geometry_policy": "formal_ur10_fixed_tcp_reference",
+    "pra_mic_position_m": [
+      0.8,
+      0.16,
+      0.65
+    ],
+    "pra_room_dim_m": [
+      4.5,
+      3.0,
+      2.8
+    ],
+    "robot_prim_path": "/World/ur10",
+    "room_center_m": [
+      2.0,
+      0.0,
+      0.0
+    ],
+    "room_dim_m": [
+      4.5,
+      3.0,
+      2.8
+    ],
+    "room_inner_bounds_m": {
+      "x_max": 4.15,
+      "x_min": -0.15,
+      "y_max": 1.4,
+      "y_min": -1.4,
+      "z_max": 2.6999999999999997,
+      "z_min": 0.1
+    },
+    "sensor_local_offset_m": [
+      0.08,
+      0.0,
+      0.0
+    ],
+    "tcp_height_m": 0.65,
+    "tcp_radius_m": 0.8,
+    "tcp_y_m": 0.16
+  },
+  "ik_robot_description": "/home/lab109/song/isaacsim6.0/app/extsDeprecated/isaacsim.robot_motion.motion_generation/motion_policy_configs/universal_robots/ur10/rmpflow/ur10_robot_description.yaml",
+  "ik_urdf": "/home/lab109/song/isaacsim6.0/app/extsDeprecated/isaacsim.robot_motion.motion_generation/motion_policy_configs/universal_robots/ur10/ur10_robot.urdf",
+  "locked_joint_positions_rad": [
+    -0.006142657715827227,
+    -1.4233249425888062,
+    1.7772034406661987,
+    -3.4951133728027344,
+    -1.5655994415283203,
+    -1.5706884860992432
+  ],
+  "max_allowed_ee_motion_m": 0.02,
+  "max_observed_ee_motion_m": 0.0,
+  "min_required_samples": 6,
+  "missing_or_out_of_tolerance_conditions": [],
+  "official_ur10_asset": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Robots/UniversalRobots/ur10/ur10.usd",
+  "output_stage": "/home/lab109/song/isaacsim6.0/runtime/scenes/phase3_material_sensitivity_cond_C.usda",
+  "parse_errors": [],
+  "pass": true,
+  "planned_conditions": [
+    {
+      "alignment_angle_deg": 9.200970875369455e-05,
+      "desired_distance_m": 0.5,
+      "distance_error_m": 3.5810785647960586e-07,
+      "distance_index": 0,
+      "inside_room": true,
+      "label": "d_0p5m",
+      "min_link_z_m": 0.03799993481105335,
+      "planned_distance_m": 0.5000003581078565,
+      "target_position_m": [
+        1.2999998513321247,
+        0.1594519072044884,
+        0.6497928103851721
+      ],
+      "within_tolerance": true
+    },
+    {
+      "alignment_angle_deg": 6.271605259442324e-05,
+      "desired_distance_m": 1.0,
+      "distance_error_m": 3.5810771992217383e-07,
+      "distance_index": 1,
+      "inside_room": true,
+      "label": "d_1p0m",
+      "min_link_z_m": 0.03799993481105335,
+      "planned_distance_m": 1.00000035810772,
+      "target_position_m": [
+        1.7999995957395434,
+        0.15897905681505187,
+        0.6496139109016905
+      ],
+      "within_tolerance": true
+    },
+    {
+      "alignment_angle_deg": 5.3112681433540734e-05,
+      "desired_distance_m": 1.5,
+      "distance_error_m": 3.581076741809852e-07,
+      "distance_index": 2,
+      "inside_room": true,
+      "label": "d_1p5m",
+      "min_link_z_m": 0.03799993481105335,
+      "planned_distance_m": 1.5000003581076742,
+      "target_position_m": [
+        2.299999340146962,
+        0.15850620642561536,
+        0.6494350114182089
+      ],
+      "within_tolerance": true
+    },
+    {
+      "alignment_angle_deg": 4.8379669580697676e-05,
+      "desired_distance_m": 2.0,
+      "distance_error_m": 3.581076519765247e-07,
+      "distance_index": 3,
+      "inside_room": true,
+      "label": "d_2p0m",
+      "min_link_z_m": 0.03799993481105335,
+      "planned_distance_m": 2.000000358107652,
+      "target_position_m": [
+        2.799999084554381,
+        0.15803335603617885,
+        0.6492561119347273
+      ],
+      "within_tolerance": true
+    },
+    {
+      "alignment_angle_deg": 4.55390409873891e-05,
+      "desired_distance_m": 2.5,
+      "distance_error_m": 3.5810763776567e-07,
+      "distance_index": 4,
+      "inside_room": true,
+      "label": "d_2p5m",
+      "min_link_z_m": 0.03799993481105335,
+      "planned_distance_m": 2.5000003581076378,
+      "target_position_m": [
+        3.299998828961799,
+        0.15756050564674232,
+        0.6490772124512456
+      ],
+      "within_tolerance": true
+    },
+    {
+      "alignment_angle_deg": 4.368451981412212e-05,
+      "desired_distance_m": 3.0,
+      "distance_error_m": 3.58107629327975e-07,
+      "distance_index": 5,
+      "inside_room": true,
+      "label": "d_3p0m",
+      "min_link_z_m": 0.03799993481105335,
+      "planned_distance_m": 3.0000003581076293,
+      "target_position_m": [
+        3.7999985733692183,
+        0.1570876552573058,
+        0.648898312967764
+      ],
+      "within_tolerance": true
+    }
+  ],
+  "planner_mode": "fixed_tcp_lula_ik_once",
+  "pre_run_hold_seconds": 0.0,
+  "raw_empty_frames": 0,
+  "repeat_id": "",
+  "requested_distance_waypoints_m": [
+    0.5,
+    1.0,
+    1.5,
+    2.0,
+    2.5,
+    3.0
+  ],
+  "robot_path": "/World/ur10",
+  "rtx_acoustic_factory_version": "v1.0",
+  "rtx_material_passport": {
+    "condition_id": "C",
+    "enabled": true,
+    "label": "high_absorption",
+    "method_note": "Soft/absorptive room proxy; PRA reference absorption=0.70.",
+    "passport_version": "v1.0",
+    "pra_absorption_value": 0.7,
+    "room_material_ids": {
+      "/World/room/ceiling": 33,
+      "/World/room/floor": 33,
+      "/World/room/wall_x_max": 33,
+      "/World/room/wall_x_min": 33,
+      "/World/room/wall_y_max": 33,
+      "/World/room/wall_y_min": 33
+    },
+    "room_nv_material": {
+      "attributes": "none",
+      "bases": "fabric",
+      "coatings": "none"
+    },
+    "target_material_id": 267,
+    "target_nv_material": {
+      "attributes": "none",
+      "bases": "plastic",
+      "coatings": "paint"
+    }
+  },
+  "samples_per_distance": 2,
+  "sensor_api_schemas": [
+    "OmniSensorGenericAcousticWpmAPI",
+    "OmniSensorWpmAcousticSensorMountAPI:m001",
+    "OmniSensorWpmAcousticSensorMountAPI:m002",
+    "OmniSensorWpmAcousticRxGroupAPI:g001",
+    "OmniSensorAPI",
+    "OmniSensorEncryptionAPI",
+    "OmniSensorWpmAcousticFiringSeqAPI:seq001"
+  ],
+  "sensor_parent_ok": true,
+  "sensor_path": "/World/ur10/ee_link/official_rtx_acoustic",
+  "sensor_prim_type": "OmniAcoustic",
+  "step_delay_seconds": 0.0,
+  "target_distance_max_m": 3.0000003581076293,
+  "target_distance_min_m": 0.5000003581078565,
+  "target_scale_m": [
+    0.08,
+    0.08,
+    0.02
+  ],
+  "tcp_solution": {
+    "above_floor": true,
+    "tcp_radius_xy_m": 0.815828627103874
+  }
+}

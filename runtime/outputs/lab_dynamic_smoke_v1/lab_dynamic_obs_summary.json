@@ -1,0 +1,190 @@
+{
+  "csv_path": "/home/lab109/song/isaacsim6.0/runtime/outputs/lab_dynamic_smoke_v1/lab_dynamic_obs_timeseries.csv",
+  "early_energy_vs_gt_pearson_r": -0.4749321809044251,
+  "figures": {
+    "lab_obs_vs_gt_distance": "/home/lab109/song/isaacsim6.0/runtime/outputs/lab_dynamic_smoke_v1/lab_obs_vs_gt_distance.png",
+    "lab_target_position_slice": "/home/lab109/song/isaacsim6.0/runtime/outputs/lab_dynamic_smoke_v1/lab_target_position_slice.png",
+    "lab_target_trajectory_xy": "/home/lab109/song/isaacsim6.0/runtime/outputs/lab_dynamic_smoke_v1/lab_target_trajectory_xy.png"
+  },
+  "geometry_passport": {
+    "default_material_condition": "B",
+    "distance_tolerance_m": 0.05,
+    "distance_waypoints_m": [
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0
+    ],
+    "ee_frame": "ee_link",
+    "ee_target_position_m": [
+      0.7200000000000001,
+      0.16,
+      0.65
+    ],
+    "experiment_mode": "fixed_tcp_moving_target",
+    "passport_id": "formal_ur10_fixed_tcp_reference",
+    "passport_version": "v1.0",
+    "pra_absorption_label": "medium_absorption",
+    "pra_absorption_value": 0.35,
+    "pra_geometry_policy": "formal_ur10_fixed_tcp_reference",
+    "pra_mic_position_m": [
+      0.8,
+      0.16,
+      0.65
+    ],
+    "pra_room_dim_m": [
+      4.5,
+      3.0,
+      2.8
+    ],
+    "robot_prim_path": "/World/ur10",
+    "room_center_m": [
+      2.0,
+      0.0,
+      0.0
+    ],
+    "room_dim_m": [
+      4.5,
+      3.0,
+      2.8
+    ],
+    "room_inner_bounds_m": {
+      "x_max": 4.15,
+      "x_min": -0.15,
+      "y_max": 1.4,
+      "y_min": -1.4,
+      "z_max": 2.6999999999999997,
+      "z_min": 0.1
+    },
+    "sensor_local_offset_m": [
+      0.08,
+      0.0,
+      0.0
+    ],
+    "tcp_height_m": 0.65,
+    "tcp_radius_m": 0.8,
+    "tcp_y_m": 0.16
+  },
+  "gmo_capture_count": 27,
+  "gmo_capture_expected": 32,
+  "gmo_capture_quality": {
+    "all_gmo_valid": true,
+    "all_modality_acoustic": true,
+    "gmo_valid_rate": 1.0,
+    "issues": [
+      "num_samples_per_sgw_inconsistent",
+      "num_signal_ways_inconsistent"
+    ],
+    "num_samples_per_sgw": null,
+    "num_samples_per_sgw_consistent": false,
+    "num_signal_ways": null,
+    "num_signal_ways_consistent": false,
+    "sample_count": 27,
+    "valid": false
+  },
+  "gmo_capture_rate": 0.84375,
+  "isaac_lab_phase": 4,
+  "lab_experiment_mode": "fixed_tcp_moving_target_dynamic",
+  "locked_tcp": {
+    "sensor_forward_m": [
+      0.9999994888148376,
+      -0.0009457007788730335,
+      -0.0003577989669632235
+    ],
+    "sensor_position_m": [
+      0.800000106924706,
+      0.1599247575939249,
+      0.6499717098686537
+    ],
+    "tcp_radius_xy_m": 0.8158284741114499,
+    "tcp_solution": {
+      "above_floor": true,
+      "tcp_radius_xy_m": 0.815828627103874
+    }
+  },
+  "max_sensor_position_motion_m": 0.0,
+  "parent_experiment_mode": "fixed_tcp_moving_target",
+  "pass": true,
+  "row_count": 128,
+  "rtx_acoustic_factory_version": "v1.0",
+  "rtx_material_passport": {
+    "condition_id": "B",
+    "enabled": true,
+    "label": "medium_absorption",
+    "method_note": "Default formal room; PRA reference absorption=0.35.",
+    "nv_material_verification": {
+      "condition_id": "B",
+      "debug_view_note": "RTX Real-Time 2.0 > Debug View > Non-Visual Material ID",
+      "decoded_room_material": [
+        "concrete",
+        "clearcoat",
+        "none"
+      ],
+      "decoded_target_material": [
+        "aluminum",
+        "paint",
+        "retroreflective"
+      ],
+      "enabled": true,
+      "expected_room_material": [
+        "concrete",
+        "clearcoat",
+        "none"
+      ],
+      "expected_target_material": [
+        "aluminum",
+        "paint",
+        "retroreflective"
+      ],
+      "issues": [],
+      "target_material_id": 4353,
+      "unique_room_material_id": 537,
+      "valid": true
+    },
+    "passport_version": "v1.0",
+    "pra_absorption_value": 0.35,
+    "room_material_ids": {
+      "/World/room/ceiling": 537,
+      "/World/room/floor": 537,
+      "/World/room/wall_x_max": 537,
+      "/World/room/wall_x_min": 537,
+      "/World/room/wall_y_max": 537,
+      "/World/room/wall_y_min": 537
+    },
+    "room_nv_material": {
+      "attributes": "none",
+      "bases": "concrete",
+      "coatings": "clearcoat"
+    },
+    "target_material_id": 4353,
+    "target_nv_material": {
+      "attributes": "retroreflective",
+      "bases": "aluminum",
+      "coatings": "paint"
+    }
+  },
+  "run_config": {
+    "decimation": 4,
+    "material_condition": "B",
+    "settle_steps": 40,
+    "steps": 128,
+    "target_settle_steps": 12
+  },
+  "timestamp_utc": "2026-06-27T16:51:49Z",
+  "trajectory": {
+    "amplitude_m": 0.5,
+    "center_distance_m": 1.5,
+    "distance_bounds_m": [
+      1.0,
+      2.0
+    ],
+    "period_steps": 64,
+    "type": "sinusoidal_distance"
+  },
+  "writer_state": {
+    "parse_errors": [],
+    "raw_empty_frames": 0
+  }
+}

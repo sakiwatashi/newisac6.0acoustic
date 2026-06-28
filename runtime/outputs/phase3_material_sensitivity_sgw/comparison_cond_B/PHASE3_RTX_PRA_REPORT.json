@@ -1,0 +1,13 @@
+{
+  "material_condition": "B",
+  "absorption_label": "medium_absorption",
+  "rtx_features": "/home/lab109/song/isaacsim6.0/runtime/outputs/phase3_material_sensitivity_sgw/rtx_features_cond_B.csv",
+  "pra_features": "/home/lab109/song/isaacsim6.0/runtime/outputs/phase3_material_sensitivity_sgw/pra_cond_B/pra_reference_features.csv",
+  "comparison_rows": 6,
+  "figure_paths": [
+    "/home/lab109/song/isaacsim6.0/runtime/outputs/phase3_material_sensitivity_sgw/comparison_cond_B/rtx_amplitude_max_vs_distance.png",
+    "/home/lab109/song/isaacsim6.0/runtime/outputs/phase3_material_sensitivity_sgw/comparison_cond_B/pra_features_vs_distance.png",
+    "/home/lab109/song/isaacsim6.0/runtime/outputs/phase3_material_sensitivity_sgw/comparison_cond_B/rtx_signal_way_peak_vs_distance.png"
+  ],
+  "claim_boundary": "Trend-level cross-model characterization only; not RTX validation against PRA."
+}

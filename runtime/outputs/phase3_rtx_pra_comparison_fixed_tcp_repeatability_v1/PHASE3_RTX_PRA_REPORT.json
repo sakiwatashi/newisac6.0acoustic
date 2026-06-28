@@ -1,0 +1,13 @@
+{
+  "material_condition": "B",
+  "absorption_label": "medium_absorption",
+  "rtx_features": "/home/lab109/song/isaacsim6.0/runtime/outputs/phase3_rtx_features/fixed_tcp_repeatability_v1_distance_features.csv",
+  "pra_features": "/home/lab109/song/isaacsim6.0/runtime/outputs/experiment_4_pra_reference_passport_v1_cond_B/pra_reference_features.csv",
+  "comparison_rows": 6,
+  "figure_paths": [
+    "/home/lab109/song/isaacsim6.0/runtime/outputs/phase3_rtx_pra_comparison_fixed_tcp_repeatability_v1/rtx_amplitude_max_vs_distance.png",
+    "/home/lab109/song/isaacsim6.0/runtime/outputs/phase3_rtx_pra_comparison_fixed_tcp_repeatability_v1/pra_features_vs_distance.png",
+    "/home/lab109/song/isaacsim6.0/runtime/outputs/phase3_rtx_pra_comparison_fixed_tcp_repeatability_v1/rtx_signal_way_peak_vs_distance.png"
+  ],
+  "claim_boundary": "Trend-level cross-model characterization only; not RTX validation against PRA."
+}

@@ -1,0 +1,7 @@
+{
+  "source": "lab_dynamic_smoke_v1",
+  "sensor_position_m": [0.800000106924706, 0.1599247575939249, 0.6499717098686537],
+  "sensor_forward_m": [0.9999994888148376, -0.0009457007788730335, -0.0003577989669632235],
+  "locked_q_rad": [0.0, -1.2, 1.2, -1.57, -1.57, 0.0],
+  "note": "Seeded from Phase 4 smoke summary; used by DirectRLEnv when live IK pose diverges."
+}

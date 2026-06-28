@@ -1,0 +1,19 @@
+{
+  "workflow_mode": "build_from_materials",
+  "target_scene": "report",
+  "output_language": "Chinese",
+  "research_tier": "pro",
+  "reference_mode": "local_first",
+  "reference_paths": [
+    "isaacsim6.0/thesis",
+    "isaacsim6.0/runtime/outputs/lab_dynamic_smoke_v1",
+    "isaacsim6.0/runtime/outputs/lab_sl_distance_v1",
+    "isaacsim6.0/runtime/outputs/fixed_tcp_repeatability_v1"
+  ],
+  "materials_dir": "isaacsim6.0/thesis",
+  "existing_manuscript": "isaacsim6.0/thesis/THESIS_DRAFT_FCU_v1.docx",
+  "venue_notes": "逢甲大學 13b 碩士論文格式；智能製造與工程管理在職學位學程",
+  "citation_target_count": 20,
+  "translation_package": "none",
+  "claim_boundary": "趨勢級模擬可行性；非波形等價、非部署級測距"
+}

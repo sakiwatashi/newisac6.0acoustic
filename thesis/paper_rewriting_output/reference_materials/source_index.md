@@ -1,0 +1,17 @@
+# Source Index
+
+- Reference mode: `local_first`
+- Indexed items: 10
+
+| Source ID | Type | Title/Name | Origin/URL/Path | Why Included | Local File/Note | Used For |
+|---|---|---|---|---|---|---|
+| REF001 | note | THESIS OUTLINE FCU 2026 06 27 | /home/lab109/song/isaacsim6.0/thesis/THESIS_OUTLINE_FCU_2026-06-27.md | Local/current-folder reference material collected before web supplementation. | /home/lab109/song/isaacsim6.0/thesis/THESIS_OUTLINE_FCU_2026-06-27.md | reference reading, source indexing, citation support, or target-scene learning |
+| REF002 | document | THESIS DRAFT FCU v1 | /home/lab109/song/isaacsim6.0/thesis/THESIS_DRAFT_FCU_v1.docx | Local/current-folder reference material collected before web supplementation. | /home/lab109/song/isaacsim6.0/thesis/THESIS_DRAFT_FCU_v1.docx | reference reading, source indexing, citation support, or target-scene learning |
+| REF003 | note | THESIS LAB SECTIONS 2026 06 28 | /home/lab109/song/isaacsim6.0/thesis/THESIS_LAB_SECTIONS_2026-06-28.md | Local/current-folder reference material collected before web supplementation. | /home/lab109/song/isaacsim6.0/thesis/THESIS_LAB_SECTIONS_2026-06-28.md | reference reading, source indexing, citation support, or target-scene learning |
+| REF004 | note | SKILLS WORKFLOW | /home/lab109/song/isaacsim6.0/thesis/SKILLS_WORKFLOW.md | Local/current-folder reference material collected before web supplementation. | /home/lab109/song/isaacsim6.0/thesis/SKILLS_WORKFLOW.md | reference reading, source indexing, citation support, or target-scene learning |
+| REF005 | note | REPLICATION PACKAGE | /home/lab109/song/isaacsim6.0/thesis/REPLICATION_PACKAGE.md | Local/current-folder reference material collected before web supplementation. | /home/lab109/song/isaacsim6.0/thesis/REPLICATION_PACKAGE.md | reference reading, source indexing, citation support, or target-scene learning |
+| REF006 | note | CITATION BANK | /home/lab109/song/isaacsim6.0/thesis/CITATION_BANK.md | Local/current-folder reference material collected before web supplementation. | /home/lab109/song/isaacsim6.0/thesis/CITATION_BANK.md | reference reading, source indexing, citation support, or target-scene learning |
+| REF007 | note | ISAAC LAB PHASE5 RL PLAN | /home/lab109/song/isaacsim6.0/thesis/ISAAC_LAB_PHASE5_RL_PLAN.md | Local/current-folder reference material collected before web supplementation. | /home/lab109/song/isaacsim6.0/thesis/ISAAC_LAB_PHASE5_RL_PLAN.md | reference reading, source indexing, citation support, or target-scene learning |
+| REF008 | note | THESIS SIM LAB SHOWCASE | /home/lab109/song/isaacsim6.0/thesis/THESIS_SIM_LAB_SHOWCASE.md | Local/current-folder reference material collected before web supplementation. | /home/lab109/song/isaacsim6.0/thesis/THESIS_SIM_LAB_SHOWCASE.md | reference reading, source indexing, citation support, or target-scene learning |
+| REF009 | note | THESIS PHASE5 INSIM RL 2026 06 28 | /home/lab109/song/isaacsim6.0/thesis/THESIS_PHASE5_INSIM_RL_2026-06-28.md | Local/current-folder reference material collected before web supplementation. | /home/lab109/song/isaacsim6.0/thesis/THESIS_PHASE5_INSIM_RL_2026-06-28.md | reference reading, source indexing, citation support, or target-scene learning |
+| REF010 | note | ISAAC LAB PHASE4 SPEC | /home/lab109/song/isaacsim6.0/thesis/ISAAC_LAB_PHASE4_SPEC.md | Local/current-folder reference material collected before web supplementation. | /home/lab109/song/isaacsim6.0/thesis/ISAAC_LAB_PHASE4_SPEC.md | reference reading, source indexing, citation support, or target-scene learning |
