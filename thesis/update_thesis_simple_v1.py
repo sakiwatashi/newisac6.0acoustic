@@ -61,7 +61,7 @@ HISTORY_BODY = (
     "初期實驗發現，最終夾取成功率並未隨感測回授明顯提升；進一步排查後，"
     "將原因歸於接觸物理與抬升流程不穩定，而非接近階段本身。"
     "因此 7 月改採「只評估接觸、不要求穩定抬升」與隨機化目標位置，"
-    "得到較乾淨的主結果（圖1）。"
+    "得到較乾淨的主結果。"
     "本文所稱感測回授接近，即利用即時感測特徵調整運動；控制概念上等同閉迴路，"
     "但正文統稱感測回授，以避免與一般軟體開發流程混淆。"
 )
@@ -205,7 +205,7 @@ def insert_history_section(doc: Document) -> Paragraph | None:
     set_text(h, HISTORY_HEADER, "Header2")
     c = insert_paragraph_after(h, "Content")
     set_text(c, HISTORY_BODY, "Content")
-    cap = insert_image_after(c, FIG["1"], "圖1  本研究歷程與系統演進")
+    cap = c
     # renumber following headers in body only
     for para in doc.paragraphs:
         t = para.text.strip()
@@ -217,45 +217,8 @@ def insert_history_section(doc: Document) -> Paragraph | None:
 
 
 def insert_extra_figures(doc: Document) -> None:
-    if find_paragraph(doc, "圖2  模擬場景示意（手臂、超音波感測與目標工件）"):
-        return
-    p32 = find_paragraph(doc, "3.2 實驗平台與可重現執行")
-    if p32:
-        content = None
-        for para in doc.paragraphs:
-            if para._element.getparent() is p32._element.getparent():
-                # find next content para after 3.2
-                pass
-        # insert scene after 3.2 paragraph's next content block
-        nxt = p32._element.getnext()
-        while nxt is not None:
-            para = Paragraph(nxt, p32._parent)
-            if para.text.strip() and not para.text.strip().startswith("3."):
-                insert_image_after(para, FIG["2"], "圖2  模擬場景示意（手臂、超音波感測與目標工件）", width_in=4.8)
-                break
-            nxt = nxt.getnext()
-
-    p52 = find_paragraph(doc, "5.2 感測回授與對照組之接近成功率比較")
-    if p52 is None:
-        p52 = find_paragraph(doc, "5.2 有無感測回授之接近成功率比較")
-    if p52:
-        nxt = p52._element.getnext()
-        while nxt is not None:
-            para = Paragraph(nxt, p52._parent)
-            if para.text.strip().startswith("階段化結果"):
-                insert_image_after(para, FIG["5"], "圖5  感測回授與對照組之階段成功率比較", width_in=5.0)
-                break
-            nxt = nxt.getnext()
-
-    p54 = find_paragraph(doc, "5.4 離線狀態判斷特徵消融")
-    if p54:
-        nxt = p54._element.getnext()
-        while nxt is not None:
-            para = Paragraph(nxt, p54._parent)
-            if para.text.strip().startswith("離線狀態判斷使用"):
-                insert_image_after(para, FIG["6"], "圖6  停止前進區域判斷：不同特徵組合之比較", width_in=5.0)
-                break
-            nxt = nxt.getnext()
+    """Skip Chinese matplotlib figures — they render as boxes without CJK fonts."""
+    return
 
 
 def ensure_figures() -> None:
