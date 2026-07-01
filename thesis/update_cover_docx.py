@@ -9,10 +9,10 @@ DOC = Path(__file__).resolve().parent / "THESIS_DRAFT_FCU_v1.docx"
 
 PROGRAM = "電聲碩士學位學程"
 TITLE_ZH = (
-    "UR10 末端 RTX 聲學感測之可審計模擬管線研究："
-    "室內聲學特徵驗證與 Isaac Lab 延伸"
+    "基於 RTX Acoustic 超音波感測之機械手臂閉迴路接近控制"
+    "與 Physical AI 狀態判斷"
 )
-DATE = "中華民國 115 年 6 月"
+DATE = "中華民國 115 年 7 月"
 ADVISOR_LINE = "指導教授：蔡鈺鼎 教授"
 
 
@@ -28,7 +28,7 @@ def main() -> None:
         t = p.text.strip()
         if t == "智能製造與工程管理碩士在職學位學程":
             replace_paragraph_text(p, PROGRAM)
-        elif t.startswith("UR10 末端 RTX"):
+        elif t.startswith("UR10 末端 RTX") or t.startswith("基於 RTX Acoustic"):
             replace_paragraph_text(p, TITLE_ZH)
         elif t.startswith("中華民國") and "年" in t:
             replace_paragraph_text(p, DATE)

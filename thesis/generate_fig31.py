@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Figure 3.1 research architecture diagram."""
+"""Generate Figure 3.1 research architecture diagram (Phase A→B→C + Physical AI)."""
 
 from pathlib import Path
 
@@ -15,7 +15,7 @@ def box(ax, xy, w, h, text, fc, ec="#333333"):
         linewidth=1.2, edgecolor=ec, facecolor=fc,
     )
     ax.add_patch(patch)
-    ax.text(xy[0] + w / 2, xy[1] + h / 2, text, ha="center", va="center", fontsize=9, wrap=True)
+    ax.text(xy[0] + w / 2, xy[1] + h / 2, text, ha="center", va="center", fontsize=8.5, wrap=True)
 
 
 def arrow(ax, p1, p2, style="-|>", color="#444444", ls="-"):
@@ -23,39 +23,46 @@ def arrow(ax, p1, p2, style="-|>", color="#444444", ls="-"):
 
 
 def main() -> None:
-    fig, ax = plt.subplots(figsize=(10, 5.5))
+    fig, ax = plt.subplots(figsize=(10, 6))
     ax.set_xlim(0, 10)
-    ax.set_ylim(0, 5.5)
+    ax.set_ylim(0, 6)
     ax.axis("off")
 
-    # Main Sim pipeline (solid)
-    box(ax, (0.4, 3.6), 1.5, 0.9, "Geometry\nPassport", "#D5E8F0")
-    box(ax, (2.2, 3.6), 1.5, 0.9, "Material\nPassport", "#D5E8F0")
-    box(ax, (4.0, 3.6), 1.6, 0.9, "RTX GMO\nCapture", "#BDD7EE")
-    box(ax, (6.0, 3.6), 1.6, 0.9, "Feature Factory\n(early energy)", "#BDD7EE")
-    box(ax, (8.0, 3.6), 1.5, 0.9, "PRA Trend\nReference", "#E2EFDA")
+    # Phase A — feature pipeline (top)
+    ax.text(5.0, 5.7, "Phase A  Feature audit (Ch.4)", ha="center", fontsize=9, fontweight="bold", color="#2F5496")
+    box(ax, (0.3, 4.5), 1.4, 0.85, "Geometry\nPassport", "#D5E8F0")
+    box(ax, (1.9, 4.5), 1.4, 0.85, "Material\nPassport", "#D5E8F0")
+    box(ax, (3.5, 4.5), 1.5, 0.85, "RTX GMO\nCapture", "#BDD7EE")
+    box(ax, (5.2, 4.5), 1.6, 0.85, "Feature Factory\n(early energy)", "#BDD7EE")
+    box(ax, (7.0, 4.5), 2.2, 0.85, "30/30 repeatability\n+ distance trend", "#FFF2CC")
+    for x in [(1.7, 4.9), (3.3, 4.9), (5.0, 4.9), (6.8, 4.9)]:
+        arrow(ax, x, (x[0] + 0.25, x[1]))
 
-    for x in [(1.9, 3.75), (3.7, 3.75), (5.6, 3.75), (7.6, 3.75)]:
-        arrow(ax, x, (x[0] + 0.35, x[1]))
+    # Phase B/C — closed loop (middle)
+    ax.text(5.0, 3.85, "Phase B/C  Closed-loop approach + Physical AI (Ch.5)", ha="center", fontsize=9, fontweight="bold", color="#C55A11")
+    box(ax, (0.3, 2.5), 1.6, 0.9, "Grasp Passport\n+ UR10e/Robotiq", "#E2EFDA")
+    box(ax, (2.1, 2.5), 1.8, 0.9, "Ultrasonic\nClosed-loop Ctrl", "#C6E0B4")
+    box(ax, (4.1, 2.5), 1.5, 0.9, "Supervisor v1\n(safety envelope)", "#C6E0B4")
+    box(ax, (5.8, 2.5), 1.6, 0.9, "Randomized\ntrials (v9)", "#FFE699")
+    box(ax, (7.6, 2.5), 2.0, 0.9, "Physical AI\nablation / audit", "#FFE699")
+    arrow(ax, (1.9, 2.95), (2.1, 2.95))
+    arrow(ax, (3.9, 2.95), (4.1, 2.95))
+    arrow(ax, (5.6, 2.95), (5.8, 2.95))
+    arrow(ax, (7.4, 2.95), (7.6, 2.95))
+    arrow(ax, (6.8, 4.5), (3.0, 3.4), ls="--")
 
-    box(ax, (3.2, 2.0), 3.6, 1.0, "Ch.4 Sim Evaluation\n30/30 · distance trend · material", "#FFF2CC")
-    arrow(ax, (6.8, 3.6), (5.0, 3.05))
-    arrow(ax, (5.0, 3.05), (5.0, 3.0))
+    # Tier B grasp evaluation (bottom)
+    ax.text(5.0, 1.85, "Phase C  Tier-B contact evaluation (limitation)", ha="center", fontsize=9, fontweight="bold", color="#7F7F7F")
+    box(ax, (2.5, 0.6), 2.2, 0.9, "Contact-only\n(--skip-lift)", "#F2F2F2")
+    box(ax, (5.0, 0.6), 2.4, 0.9, "Stage metrics\napproach / near / final", "#F2F2F2")
+    arrow(ax, (4.7, 2.5), (3.6, 1.5), ls="--")
+    arrow(ax, (6.2, 2.5), (6.2, 1.5), ls="--")
 
-    # Lab extension (dashed)
-    box(ax, (0.8, 0.5), 2.0, 0.9, "Isaac Lab\nDynamic Env", "#FCE4D6")
-    box(ax, (3.2, 0.5), 2.0, 0.9, "Sim→Lab SL\n(r≈0.47)", "#FCE4D6")
-    box(ax, (5.6, 0.5), 2.2, 0.9, "In-sim RL\n(loop viability)", "#FCE4D6")
-    box(ax, (8.2, 0.5), 1.4, 0.9, "Ch.5\nExtension", "#F8CBAD")
-
-    arrow(ax, (6.8, 3.6), (1.8, 1.4), ls="--")
-    arrow(ax, (1.8, 0.5), (3.2, 0.95))
-    arrow(ax, (5.2, 0.95), (5.6, 0.95))
-    arrow(ax, (7.8, 0.95), (8.2, 0.95), ls="--")
-
-    ax.text(5.0, 5.2, "Figure 3.1  Research architecture (solid = Ch.3–4 core; dashed = Ch.5 extension)",
-            ha="center", fontsize=11, fontweight="bold")
-    ax.text(0.5, 1.8, "Same Passport +\nFactory reuse", fontsize=8, color="#666666")
+    ax.text(
+        5.0, 0.15,
+        "Figure 3.1  Research architecture (solid = core pipeline; dashed = downstream evaluation)",
+        ha="center", fontsize=10, fontweight="bold",
+    )
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     fig.tight_layout()

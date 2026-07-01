@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild thesis docx: six chapters, abstract, fig3.1, claim table, cleanup."""
+"""Rebuild thesis docx: six chapters aligned with 2026-07-01 Physical AI summary."""
 
 from __future__ import annotations
 
@@ -23,55 +23,49 @@ FIG = {
     "3.1": THESIS / "figures/fig3_1_research_architecture.png",
     "4.1": ROOT / "runtime/outputs/phase3_rtx_pra_comparison_fixed_tcp_repeatability_v1/rtx_amplitude_max_vs_distance.png",
     "4.2": THESIS / "figures/fig4_2_rtx_early_energy_vs_distance.png",
-    "4.3": ROOT / "runtime/outputs/phase3_rtx_pra_comparison_fixed_tcp_repeatability_v1/pra_features_vs_distance.png",
     "4.4": THESIS / "figures/fig4_4_material_early_energy_0p5m.png",
-    "5.1": ROOT / "runtime/outputs/lab_dynamic_smoke_v1/lab_target_trajectory_xy.png",
-    "5.2": ROOT / "runtime/outputs/lab_dynamic_smoke_v1/lab_obs_vs_gt_distance.png",
-    "5.3": ROOT / "runtime/outputs/lab_sl_distance_v1/sl_sim_to_lab_pred_vs_gt.png",
-    "5.4": ROOT / "runtime/outputs/lab_sl_distance_v1/sl_sim_to_lab_trajectory.png",
 }
 
 ABSTRACT_ZH = (
-    "本研究從應用電聲角度，探討室內主動聲學回波特徵能否在可控幾何下支撐趨勢級距離推理。"
-    "研究平台為 NVIDIA Isaac Sim 6.0.0-rc.59 host standalone RTX Acoustic，感測器懸掛於 Universal Robots UR10 末端；"
-    "實驗採固定 TCP、移動目標設計，於 0.5–3.0 m 範圍進行 6×5 次正式擷取，全部通過驗證（30/30 PASS）。"
-    "結果顯示 primary_sgw_early_energy 優於飽和之振幅峰值作為距離代理（Spearman ρ≈−0.66, n=6），"
-    "且與 PyRoomAcoustics early energy 呈中度正相關趨勢（ρ≈+0.66, p≈0.16, n=6），"
-    "僅作 pilot cross-model characterization，非波形等價。"
-    "延伸實驗將同一 Geometry Passport 與特徵工廠接入 Isaac Lab：動態場景 128 steps 觀測中，"
-    "early_energy 與 GT 距離 ρ≈−0.48；Sim 靜態標定訓練之線性回歸於 Lab hold-out 達 MAE≈0.41 m、r≈0.47。"
-    "in-sim RSL-RL PPO 閉環示範訓練迴路可行，但 hold-out 未優於監督基線（v5 det MAE≈0.44 m）。"
-    "本研究貢獻為可審計模擬可行性管線與明確 claim boundary，非部署級測距或波形級數位雙生。"
+    "本研究從應用電聲角度，探討 RTX Acoustic 超音波特徵能否在 Isaac Sim 可控幾何下支撐趨勢級距離推理，"
+    "並進一步驅動機械手臂閉迴路接近與離線 Physical AI 狀態估計。"
+    "研究平台為 NVIDIA Isaac Sim 6.0.0-rc.59 host standalone，Phase A 採 UR10 固定 TCP、移動目標設計，"
+    "於 0.5–3.0 m 進行 6×5 次正式擷取，全部通過驗證（30/30 PASS）；"
+    "primary_sgw_early_energy 優於飽和振幅峰值作為距離代理（Spearman ρ≈−0.66, n=6）。"
+    "Phase B/C 以 UR10e + Robotiq 2F-85 與腕部 RTX 感測器建構閉環接近管線，"
+    "於隨機化目標位姿之 v9 資料集上，閉環組 approach ≤0.45 m 達 84.0%（25 trials），"
+    "顯著優於 open-loop baseline 之 29.2%（24 trials）；"
+    "離線 stop_region 分類中，acoustic_only 特徵 F1≈0.598，顯示聲學觀測含可測量狀態信號。"
+    "最終夾取成功率約 20%（兩組相近），瓶頸在下游 PhysX 接觸／夾爪整合，非聲學接近本身。"
+    "本研究貢獻為可審計模擬可行性管線與明確 claim boundary，非部署級測距或穩定端到端夾取系統。"
 )
 
 ABSTRACT_EN = (
-    "This thesis examines, from an applied electro-acoustics perspective, whether indoor active acoustic echo "
-    "features support trend-level distance reasoning under controlled geometry. Using NVIDIA Isaac Sim 6.0.0-rc.59 "
-    "host standalone RTX Acoustic on a UR10 end-effector with a fixed-TCP, moving-target protocol, all 30 formal "
-    "captures (6 distances × 5 repeats) passed validation. primary_sgw_early_energy outperformed saturated "
-    "amplitude peaks as a distance proxy (Spearman ρ≈−0.66, n=6) and showed a moderate positive trend with "
-    "PyRoomAcoustics early energy (ρ≈+0.66, p≈0.16, n=6) as pilot cross-model characterization, "
-    "without waveform equivalence. "
-    "The same geometry passport and feature factory were extended in Isaac Lab: dynamic observations showed "
-    "ρ≈−0.48 between early energy and ground-truth distance; Sim-trained linear regression achieved MAE≈0.41 m "
-    "and r≈0.47 on Lab hold-out. In-simulation RSL-RL PPO demonstrated a feasible closed loop but did not beat "
-    "the supervised baseline (v5 det MAE≈0.44 m). The contribution is an auditable feasibility pipeline with "
-    "explicit claim boundaries, not deployment-grade ranging or waveform-faithful digital twins."
+    "This thesis examines, from an applied electro-acoustics perspective, whether RTX Acoustic ultrasonic "
+    "features support trend-level distance reasoning and closed-loop robotic approach in Isaac Sim. "
+    "Phase A uses a fixed-TCP, moving-target protocol on a UR10 end-effector; all 30 formal captures "
+    "(6 distances × 5 repeats) passed validation, with primary_sgw_early_energy outperforming saturated "
+    "amplitude peaks (Spearman ρ≈−0.66, n=6). Phase B/C builds a UR10e + Robotiq closed-loop pipeline "
+    "with wrist-mounted RTX sensing. On the randomized v9 dataset, closed-loop approach within 0.45 m "
+    "reached 84.0% (25 trials) versus 29.2% for an open-loop baseline (24 trials). Offline stop-region "
+    "classification with acoustic-only features achieved F1≈0.598. Final grasp success remained near 20% "
+    "in both modes, indicating contact/gripper integration—not acoustic approach—as the limiting stage. "
+    "The contribution is an auditable feasibility pipeline with explicit claim boundaries, not "
+    "deployment-grade ranging or stable end-to-end grasping."
 )
 
-KEYWORDS_ZH = "關鍵詞：室內聲學；RTX Acoustic；signal-way 特徵；early energy；Isaac Sim；可重複性"
-KEYWORDS_EN = "Keywords: indoor acoustics; RTX Acoustic; signal-way features; early energy; Isaac Sim; repeatability"
+KEYWORDS_ZH = "關鍵詞：RTX Acoustic；閉迴路接近；Physical AI；early energy；Isaac Sim；可重複性"
+KEYWORDS_EN = "Keywords: RTX Acoustic; closed-loop approach; Physical AI; early energy; Isaac Sim; repeatability"
 
-# Import references from build_chapter2_docx
 sys.path.insert(0, str(THESIS))
 from build_chapter2_docx import CHAPTER2, REFERENCES  # noqa: E402
 
-# Fix Ch2 §2.6 for 電聲學程
 CH2_FIXED = []
 for item in CHAPTER2:
+    if item[0] == "Content" and "PyRoom" in item[1] and "趨勢對照" in item[1]:
+        continue
     if item[0] == "Content" and "智能製造" in item[1]:
         text = item[1].replace("呼應本學程之智能製造脈絡", "呼應電聲與機器人應用交叉之模擬驗證需求")
-        text = text.replace("§4.6", "§5.3")
         CH2_FIXED.append((item[0], text))
     elif item[0] == "Content" and "Zhou" in item[1] and "智能製造" in item[1]:
         text = item[1].replace("呼應智能製造數位驗證需求", "支撐機器人應用場景之模擬驗證")
@@ -84,46 +78,46 @@ CH1 = [
     ("Header2", "1.1 研究背景與問題意識"),
     (
         "Content",
-        "室內主動聲學系統中，多徑傳播與殘響使接收信號同時承載幾何、材質與距離資訊，但各分量往往以弱耦合方式呈現於摘要特徵。"
-        "在機器人末端非視覺測距應用中，如何從可控實驗條件下擷取可重現之聲學觀測，並據以判斷距離趨勢是否可被辨識，是應用電聲與機器人感知之交叉問題。"
+        "室內主動聲學系統中，多徑傳播與殘響使接收信號同時承載幾何、材質與距離資訊。"
+        "在機器人末端非視覺 last-meter 接近中，如何從可控模擬條件擷取可重現聲學觀測，"
+        "並據以驅動閉環運動與離線狀態判斷，是應用電聲與機器人感知之交叉問題。"
         "NVIDIA Isaac Sim 6.0 提供 RTX Acoustic 實驗性模組，可輸出 Generic Model Output（GMO）signal-way 序列，"
-        "為在模擬環境中系統化檢驗上述問題提供工具。",
+        "為系統化檢驗上述問題提供工具。",
     ),
     (
         "Content",
-        "本研究之核心問題為：在固定 TCP 與可審計幾何／材質條件下，RTX 聲學特徵（尤其 primary_sgw_early_energy）"
-        "能否支撐趨勢級距離推理？此問題之答案應以可重複性與跨模型趨勢對照衡量，"
-        "而非假設模擬波形等同實機超音波感測器或 CH201 硬體輸出。",
+        "與相機 + 視覺語言模型（VLM）端到端操作相比，本研究聚焦非視覺超聲閉環接近，"
+        "定位為互補而非取代：VLM 擅長語義與粗定位，超聲擅長走廊內距離趨勢接近。",
     ),
     ("Header2", "1.2 研究目的與問題陳述"),
-    ("Content", "主問題：Isaac Sim 可審計 RTX 聲學擷取管線是否可行且可重現？"),
-    ("Content", "子問題一：early energy 等特徵對距離與材質條件之敏感度為何？"),
-    ("Content", "子問題二：同一特徵定義能否遷移至 Isaac Lab 動態場景與學習迴路（監督／強化）？"),
+    ("Content", "RQ1（Phase A）：固定 TCP 下 RTX 特徵是否可重現且具距離趨勢？"),
+    ("Content", "RQ2（Phase B）：閉環控制器能否改善目標區到達率（相對 open-loop）？"),
+    ("Content", "RQ3（Phase B/C）：離線 Physical AI 是否含可測量聲學狀態信號？"),
+    ("Content", "RQ4（Phase C，限制）：Tier B 接觸級夾取是否趨勢級可行？"),
     ("Header2", "1.3 研究範圍與限制"),
     (
         "Content",
-        "納入：Isaac Sim 6.0 host standalone、官方 UR10、六面牆房間、sensor→target 0.5–3.0 m（6 點）、"
-        "材質 A/B/C、30 次正式實驗、Isaac Lab 動態 smoke 與 Sim→Lab 監督學習、in-sim RL 閉環示範。"
-        "排除：CH201 實機量測、波形級 RTX–PRA 等價、移動手臂 IK 舊方案。",
+        "納入：Isaac Sim 6.0 host standalone、UR10/UR10e 官方資產、六面牆房間、"
+        "Phase A 30/30 特徵實驗、Phase B/C 閉環接近與 v9 隨機化 Physical AI 資料集、"
+        "Tier B contact-only（--skip-lift）夾取評估。"
+        "排除：CH201 實機量測、波形級跨模擬器等價、穩定物理抬升、可部署學習控制器。",
     ),
     (
         "Content",
-        "限制：模擬 only；單一 TCP 姿態；early_energy 為啟發式（前 25% samples 能量和）；"
-        "RTX Acoustic 為 experimental API；6 距離點旨在可行性而非回歸精度飽和。",
+        "限制：模擬 only；experimental API；控制器不讀目標世界座標作前進決策，"
+        "但 supervisor 可用 oracle 距離作安全包絡；最終夾取成功率約 20%，應歸因 PhysX 接觸整合。",
     ),
     ("Header2", "1.4 名詞解釋與研究貢獻"),
     (
         "Content",
-        "GMO（Generic Model Output）：RTX 聲學感測輸出之結構化訊息，含 signal-way 振幅序列。"
-        "Passport：可版本化之幾何／材質實驗護照。trend-level：趨勢級，允許單調相關但不宣稱絕對誤差達部署規格。"
+        "Passport：可版本化之幾何／材質／任務實驗護照。"
+        "trend-level：趨勢級，允許單調相關但不宣稱部署精度。"
         "claim boundary：可宣稱與不可宣稱之對照邊界（詳表6.1）。",
     ),
-    (
-        "Content",
-        "貢獻一（主）：建立 UR10 固定 TCP 下可審計 RTX 聲學管線，完成 30/30 可重複性與 RTX×PRA pilot 趨勢對照（n=6）。",
-    ),
-    ("Content", "貢獻二（次）：延伸至 Isaac Lab 動態觀測與 Sim→Lab 監督遷移（r≈0.47，MAE≈0.41 m）。"),
-    ("Content", "貢獻三（附）：示範 in-sim RSL-RL 閉環可跑通；未優於監督基線，僅證訓練迴路可行性。"),
+    ("Content", "貢獻一（主）：Geometry/Material Passport + 30/30 可審計 RTX 特徵管線（Phase A）。"),
+    ("Content", "貢獻二（次）：超聲閉環接近 + supervisor v1；v9 上 84% vs 29% 區域到達改善（Phase B）。"),
+    ("Content", "貢獻三（次）：隨機化 Sim 下 Physical AI 狀態估計基線（acoustic_only F1≈0.598）。"),
+    ("Content", "貢獻四（附）：Tier B contact-only 示範與階段化評估框架；夾取瓶頸列為限制（Phase C）。"),
 ]
 
 CH3 = [
@@ -131,134 +125,157 @@ CH3 = [
     ("Header2", "3.1 研究架構"),
     (
         "Content",
-        "本研究主線為 Isaac Sim 可審計管線（第三、四章）；Isaac Lab 動態觀測與學習示範為延伸（第五章）。"
-        "圖3.1 示固態流程：Passport 定義變量 → RTX 擷取 → 特徵工廠 → PRA 趨勢對照 → Sim 主實驗評估；"
-        "虛線為同一 Passport／Factory 接入 Lab 之延伸路徑。",
+        "本研究採 Phase A→B→C 三階架構（圖3.1）："
+        "Phase A 驗證特徵可審計性；Phase B 驗證閉環接近；"
+        "Phase C 評估 Tier B 接觸與離線 Physical AI 狀態估計。"
+        "Isaac Lab 動態觀測與 SL/RL 示範保留為附錄延伸，非主貢獻。",
     ),
-    ("Image", "3.1", "圖3.1  研究架構（實線：Sim 主線；虛線：Lab 延伸）"),
+    ("Image", "3.1", "圖3.1  研究架構（Phase A→B→C + Physical AI）"),
     ("Header2", "3.2 實驗平台與可重現執行"),
     (
         "Content",
-        "Isaac Sim 6.0 host standalone（6.0.0-rc.59），以 scripts/run_host_python.sh 與 env_host_isolated.sh 隔離執行。"
-        "機器人為官方 UR10 USD；RTX Acoustic 掛載於 ee_link/official_rtx_acoustic。",
+        "Isaac Sim 6.0 host standalone（6.0.0-rc.59），以 scripts/env_host_isolated.sh 隔離執行。"
+        "Phase A 使用官方 UR10；Phase B/C 使用 UR10e + Robotiq 2F-85，RTX 感測器掛載於腕部連桿。",
     ),
-    ("Header2", "3.3 實驗設計：fixed_tcp_moving_target"),
+    ("Header2", "3.3 Phase A：fixed_tcp_moving_target"),
     (
         "Content",
         "固定 TCP（xy 半徑≈0.816 m、z≈0.65 m），僅移動 8 cm×8 cm×2 cm 目標板；ee_link 運動量 0 m。"
         "距離 waypoints：0.5–3.0 m（6 點）。設計目的為隔離幾何變量，使重複性與趨勢分析可解釋。",
     ),
-    ("Header2", "3.4 Geometry Passport 與 Material Passport"),
+    ("Header2", "3.4 Passport 體系"),
     (
         "Content",
-        "Geometry Passport v1.0：房間 4.5 m×3.0 m×2.8 m、感測器掛載、目標軌跡。"
-        "Material Passport v1.0：NonVisualMaterial 條件 A（低吸收）、B（中吸收，主實驗）、C（高吸收）。",
+        "Geometry Passport v1.0：房間、感測器掛載、目標軌跡。"
+        "Material Passport v1.0：NonVisualMaterial 條件 A/B/C。"
+        "Grasp Passport v1.0：搜尋走廊、standoff、UR10e/Robotiq 任務幾何。",
     ),
     ("Header2", "3.5 RTX GMO 擷取與 signal-way 特徵"),
     (
         "Content",
-        "以 Replicator Writer 擷取 GMO；timeline.play() 驅動步進。rtx_acoustic_factory.py 驗證結構並解析 signal-way，"
-        "萃取 primary_sgw_early_energy（前 25% samples 能量和）、primary_sgw_peak 等。",
+        "以 Replicator Writer 擷取 GMO；rtx_acoustic_factory.py 解析 signal-way，"
+        "萃取 primary_sgw_early_energy、TOF、雙 RX 平衡等特徵。",
     ),
-    ("Header2", "3.6 PyRoomAcoustics 趨勢參考協定"),
+    ("Header2", "3.6 Phase B：UltrasonicClosedLoopController"),
     (
         "Content",
-        "PyRoomAcoustics v0.10.1 批次產生與 Geometry Passport 對齊之 RIR；萃取 RT60、early energy 等。"
-        "PRA 僅作趨勢參考，非 RTX 波形 ground truth。",
+        "純 Python 狀態機（ultrasonic_closed_loop_controller.py），"
+        "融合 early_energy、TOF 與對齊分數估計距離趨勢並驅動逐步接近。"
+        "控制器不消費目標世界座標作前進決策；oracle 距離僅供評估記錄。",
     ),
-    ("Header2", "3.7 評估指標與 claim boundary"),
+    ("Header2", "3.7 Phase C：supervisor、contact-only 與隨機化協定"),
     (
         "Content",
-        "可重複性：30/30 PASS、gmo_valid_rate、跨 repeat CV。趨勢：Spearman ρ（距離／材質）。"
-        "延伸：Lab 動態 ρ、Sim→Lab SL 之 MAE／Pearson r、RL hold-out 對照。"
+        "approach_supervisor_v1.py 於 fusion 飽和或前進上限時以 oracle 距離作安全仲裁，"
+        "建議進入 standoff／夾取階段。"
+        "預設 --skip-lift（FixedCuboid）以隔離 PhysX lift 不穩定。"
+        "v8/v9 管線隨機化 search start 與 wrench 橫向位置，打破 sensor_x/y 捷徑。",
+    ),
+    ("Header2", "3.8 評估指標與 claim boundary"),
+    (
+        "Content",
+        "Phase A：30/30 PASS、Spearman ρ、跨 repeat CV。"
+        "Phase B/C：approach/near/final 階段成功率、closed-loop vs open-loop 對照、"
+        "Physical AI ablation（F1、balanced accuracy）。"
         "全書以表6.1 集中界定可宣稱與不可宣稱項目。",
     ),
 ]
 
 CH4 = [
-    ("Header1", "第四章、Isaac Sim 實證結果與分析"),
+    ("Header1", "第四章、特徵驗證結果（Phase A）"),
     ("Header2", "4.1 可重複性與管線可行性"),
     (
         "Content",
         "正式實驗 30/30 PASS；gmo_valid_rate=1.0；max_ee_motion_m=0。"
         "2.0–3.0 m 區間 amplitude_max 與 early_energy 之跨 repeat CV 近乎 0，顯示擷取管線穩定。",
     ),
-    ("Header2", "4.2 距離趨勢與 RTX×PRA 對照"),
+    ("Header2", "4.2 距離趨勢"),
     (
         "Content",
-        "材質 B、5 repeats 平均：amplitude_max 於 1.0 m 後飽和；primary_sgw_early_energy 與距離 ρ≈−0.66（n=6）。"
-        "RTX 與 PRA early energy 呈中度正相關趨勢（ρ≈+0.66, p≈0.16, n=6），振幅尺度不同；"
-        "未達統計顯著，僅作 pilot cross-model characterization，非波形等價。",
+        "材質 B、5 repeats 平均：amplitude_max 於 1.0 m 後飽和；"
+        "primary_sgw_early_energy 與距離 Spearman ρ≈−0.66（n=6），優於 peak 作為距離 proxy。",
     ),
     ("Image", "4.1", "圖4.1  RTX amplitude_max 與目標距離（材質 B）"),
     ("Image", "4.2", "圖4.2  RTX primary_sgw_early_energy 與目標距離（材質 B）"),
-    ("Image", "4.3", "圖4.3  PyRoomAcoustics 特徵與目標距離趨勢對照"),
     ("Header2", "4.3 材質敏感度（A/B/C）"),
     (
         "Content",
-        "primary_sgw_peak 於 0.5 m 與 3.0 m 幾乎無差；early_energy @0.5 m 可區分 C（≈190.6）與 A/B（≈165.4）。"
-        "PRA RT60 對材質吸收更敏感。",
+        "primary_sgw_peak 於 0.5 m 與 3.0 m 幾乎無差；"
+        "early_energy @0.5 m 可區分 C（≈190.6）與 A/B（≈165.4），顯示材質吸收對早期能量之影響。",
     ),
-    ("Image", "4.4", "圖4.4  材質 A/B/C 於 0.5 m 之 early_energy 比較"),
+    ("Image", "4.4", "圖4.3  材質 A/B/C 於 0.5 m 之 early_energy 比較"),
     ("Header2", "4.4 穩健性驗證（P1）"),
     (
         "Content",
         "P1 smoke 驗證 rtx_acoustic_factory 對 GMO 之結構檢查：signal-way 維度、ACOUSTIC 模態、"
-        "primary/ref/all peak 一致性與非平坦波形條件。NonVisualMaterial 條件之 NV ID 解碼與 Passport 登錄一致。"
-        "P1 確保特徵萃取前資料有效，屬管線穩健性而非獨立物理假設檢驗。",
+        "primary/ref/all peak 一致性與非平坦波形條件。P1 確保特徵萃取前資料有效。",
     ),
 ]
 
 CH5 = [
-    ("Header1", "第五章、Isaac Lab 延伸與學習示範"),
-    ("Header2", "5.1 動態環境與觀測協定"),
+    ("Header1", "第五章、閉環接近、Physical AI 與夾取評估（Phase B/C）"),
+    ("Header2", "5.1 實驗協定與資料集"),
     (
         "Content",
-        "Ur10RtxAcousticDynamicEnv 重用 Sim 之 Passport 與 Factory；目標正弦運動 "
-        "d(t)=1.5+0.5·sin(2π·step/64) m，128 steps，GMO decimation=4。觀測含 early_energy、peak、gmo_valid 與 GT 距離。",
+        "Canonical 資料集：physical_ai_v9_skip_lift_clean（49 trial 目錄、284 step rows；"
+        "closed_loop 25 trials、open_loop_baseline 24 trials）。"
+        "接觸模式：--skip-lift / FixedCuboid，避免 PhysX lift 污染。"
+        "控制器：closed_loop 使用超聲融合距離估計；open_loop_baseline 作對照。",
     ),
-    ("Header2", "5.2 動態觀測結果"),
+    ("Header2", "5.2 閉環 vs open-loop 接近成功率"),
     (
         "Content",
-        "27 步有效 GMO（gmo_valid_rate=1.0）；max_sensor_position_motion_m=0。"
-        "primary_sgw_early_energy 與 GT 距離 Pearson ρ=−0.475（n=27），方向與 Sim 一致。",
+        "階段化審計顯示：閉環組在 approach ≤0.45 m 與 near ≤0.35 m 均達 84.0%，"
+        "open-loop 分別僅 29.2% 與 4.2%。"
+        "最終 success 兩組皆約 20%，表明聲學閉環主要改善區域到達，而非下游夾取執行。",
     ),
-    ("Image", "5.1", "圖5.1  動態場景 GT 距離軌跡（1.0–2.0 m）"),
-    ("Image", "5.2", "圖5.2  Lab early_energy 與 GT 距離（ρ≈−0.48）"),
-    ("Header2", "5.3 Sim→Lab 監督學習"),
-    (
-        "Content",
-        "Sim n=125 訓練單變量線性回歸（early_energy）；Lab n=27 測試：MAE=0.41 m、RMSE=0.52 m、r=0.47。"
-        "加入 peak 之雙特徵模型 MAE 升至 0.44 m（peak 飽和）。此為趨勢級示範，非部署精度。",
-    ),
-    ("Image", "5.3", "圖5.3  Sim 訓練→Lab 測試：預測 vs GT"),
-    ("Image", "5.4", "圖5.4  Sim→Lab 預測與 GT 軌跡對照"),
-    ("Header2", "5.4 In-sim RSL-RL 閉環示範"),
-    (
-        "Content",
-        "DirectRLEnv + RSL-RL PPO；修正 GMO writer 生命週期後 gmo_init_captured=True。"
-        "v3 det MAE=0.115 m 但 pred 近常數（std≈0），低 MAE 部分來自常數預測，非真實追蹤。"
-        "v5 塑形獎勵 500 iter：pred 具變異（std≈0.48 m），惟 det MAE=0.441 m、r=0.229，未優於 §5.3 SL（MAE=0.41 m，r=0.47）。",
-    ),
-    ("TableCaption", "表5.1  In-sim RSL-RL hold-out 評估（64 steps）"),
+    ("TableCaption", "表5.1  隨機化 v9 階段成功率（contact-only）"),
     (
         "Table",
-        ["Run", "Checkpoint", "模式", "MAE(m)", "r(gt,pred)", "pred mean±std(m)"],
+        ["指標", "Closed-loop", "Open-loop"],
         [
-            ["long_v3", "model_199", "det", "0.115", "0.335", "1.576±0.000"],
-            ["long_v5", "model_499", "det", "0.441", "0.229", "1.637±0.477"],
-            ["long_v5", "model_499", "stoch", "0.457", "0.078", "1.559±0.481"],
+            ["Approach ≤ 0.45 m", "84.0% (21/25)", "29.2% (7/24)"],
+            ["Near ≤ 0.35 m", "84.0% (21/25)", "4.2% (1/24)"],
+            ["Final success", "20.0% (5/25)", "20.8% (5/24)"],
         ],
     ),
-    ("TableCaption", "表5.2  與 §5.3 監督基線對照"),
+    ("Header2", "5.3 規則監管員 v1"),
+    (
+        "Content",
+        "當融合距離飽和（約 0.73 m）而 tool0 已達前進上限時，supervisor 以 oracle 距離判斷是否足夠接近，"
+        "建議進入 standoff／夾取。此設計屬安全包絡，非逐步神經策略；"
+        "論文 claim 明確區分「控制器不讀 target pose」與「系統層安全仲裁」。",
+    ),
+    ("Header2", "5.4 離線 Physical AI 特徵消融"),
+    (
+        "Content",
+        "以 physical_ai_v9_skip_lift_clean 步級資料訓練 logistic regression / decision tree 基線。"
+        "stop_region_label 上，all_features 最佳（F1=0.684）；"
+        "acoustic_only 達 F1=0.598，優於 pose_only（F1=0.533），顯示聲學特徵含狀態資訊；"
+        "pose 仍為混淆因子。結果支持離線狀態估計可行性，非可部署控制器。",
+    ),
+    ("TableCaption", "表5.2  stop_region_label 特徵消融（v9）"),
     (
         "Table",
-        ["方法", "MAE (m)", "Pearson r", "備註"],
+        ["Feature set", "F1", "Balanced accuracy"],
         [
-            ["Sim→Lab 線性 SL", "0.41", "0.47", "主學習基線"],
-            ["in-sim PPO v3 det", "0.115", "0.34", "pred 近常數"],
-            ["in-sim PPO v5 det", "0.441", "0.229", "有變異，未優於 SL"],
+            ["All features", "0.684", "0.665"],
+            ["Acoustic only", "0.598", "0.590"],
+            ["Pose only", "0.533", "0.650"],
         ],
+    ),
+    ("Header2", "5.5 Tier B 夾取與限制"),
+    (
+        "Content",
+        "contact-only 模式下，PhysX 非有限態多來自 Robotiq 接觸物理或誤入 lift 路徑，"
+        "已以 --skip-lift 明確旗標修復 headless 建立 DynamicCuboid 之 bug。"
+        "SurfaceGripper 官方整合嘗試未成功（runtime 註冊失敗），列為限制與未來工作。",
+    ),
+    ("Header2", "5.6 與 VLM 端到端路線之討論"),
+    (
+        "Content",
+        "本研究不與 VLM 全任務成功率硬比較，而強調 last-meter 非視覺閉環之互補角色。"
+        "未來可探索 VLM 粗定位 + 超聲精接近之 hybrid 架構。",
     ),
 ]
 
@@ -267,17 +284,18 @@ CH6 = [
     ("Header2", "6.1 研究結論"),
     (
         "Content",
-        "（1）主貢獻：固定 TCP 下 RTX 聲學擷取管線具高可重複性（30/30），early_energy 為優於 peak 之距離 proxy。"
-        "（2）延伸：同一特徵定義可接入 Lab 動態觀測，Sim→Lab SL 達趨勢級追蹤（r≈0.47）。"
-        "（3）附錄級：in-sim RL 閉環可跑通，但未在 hold-out 上優於 SL。",
+        "（1）RQ1：固定 TCP 下 RTX 聲學管線具高可重複性（30/30），early_energy 為有效距離 proxy。"
+        "（2）RQ2：閉環超聲接近顯著改善隨機化場景下目標區到達率（84% vs 29%）。"
+        "（3）RQ3：離線 Physical AI 顯示 acoustic_only 含可測量狀態信號（F1≈0.598）。"
+        "（4）RQ4：最終夾取約 20%，應列為下游 PhysX／夾爪限制，非否定聲學主線。",
     ),
     ("Header2", "6.2 綜合討論"),
     (
         "Content",
-        "電聲觀點：室內多徑使距離資訊主要體現在早期能量之弱趨勢，而非 peak 飽和區。"
-        "模擬觀點：RTX 與 PRA early energy 於 n=6 呈中度趨勢對應（p≈0.16，未達顯著），"
-        "模型機制仍不同，支持以任務級指標（ρ、CV、PASS）論證可行性。"
-        "學習觀點：SL 在弱信號下較穩健；RL 低 MAE 需搭配 pred 變異解讀，避免過度宣稱。",
+        "電聲觀點：室內多徑使距離資訊體現在早期能量之弱趨勢；飽和 peak 不適合作距離特徵。"
+        "控制觀點：閉環融合 + 走廊幾何可將趨勢級特徵轉為可重現接近行為。"
+        "Physical AI 觀點：隨機化協定必要，以避免 pose 捷徑；多特徵優於單一閾值。"
+        "操作觀點：接觸／抬升整合仍是 Sim2Real 前主要瓶頸。",
     ),
     ("Header2", "6.3 研究限制與 claim boundary"),
     ("TableCaption", "表6.1  Claim boundary 總表"),
@@ -286,20 +304,44 @@ CH6 = [
         ["範疇", "可宣稱", "不可宣稱"],
         [
             [
-                "Sim 主實驗",
-                "30/30 可重複；early_energy 趨勢；RTX×PRA early energy 中度趨勢（ρ≈+0.66, p≈0.16, n=6, pilot）",
-                "波形等價；跨模型統計顯著一致；厘米級測距",
+                "Phase A",
+                "30/30；early_energy 距離趨勢（ρ≈−0.66, n=6）",
+                "厘米級測距；波形等價",
             ],
-            ["Lab / SL", "動態觀測可行；Sim→Lab 趨勢遷移 r≈0.47", "MAE 0.41 m 可部署；高 R² 即物理測距"],
-            ["in-sim RL", "DirectRLEnv 閉環可跑通；GMO 修正後有效", "優於 SL；v3 低 MAE 即學會測距"],
-            ["整體", "可審計可行性管線", "CH201 實機已驗證；數位雙生完成"],
+            [
+                "Phase B",
+                "閉環 approach ≤0.45 m：84% vs open-loop 29%",
+                "純超聲端到端夾取；零 oracle 系統",
+            ],
+            [
+                "Physical AI",
+                "acoustic_only stop_region F1≈0.598",
+                "可部署學習控制器",
+            ],
+            [
+                "Phase C",
+                "Tier B contact-only 階段化評估",
+                "穩定最終夾取；部署級 grasp rate",
+            ],
+            [
+                "整體",
+                "可審計 Sim 可行性管線",
+                "CH201 實機已驗證；優於 VLM 全任務",
+            ],
         ],
     ),
     ("Header2", "6.4 後續建議"),
     (
         "Content",
-        "建議：（1）CH201 實機 task-level 協定；（2）擴大距離／離軸點位以增加 early_energy 動態；"
-        "（3）特徵工程與不確定性量化；（4）以 replication package 支援口試重現。",
+        "建議：（1）CH201 實機 task-level 協定；（2）SurfaceGripper isolated smoke 後再整合 UR10；"
+        "（3）擴充隨機化資料並分離 approach/contact/lift 指標；"
+        "（4）VLM + 超聲 hybrid；（5）以 replication package 支援口試重現。",
+    ),
+    ("Header2", "附錄說明（Isaac Lab 延伸）"),
+    (
+        "Content",
+        "Isaac Lab 動態 smoke（ρ≈−0.48）、Sim→Lab SL（r≈0.47）、in-sim RL 閉環示範已實作，"
+        "保留為附錄或未來工作，不計入本版主貢獻。",
     ),
 ]
 
@@ -390,9 +432,6 @@ def cleanup_front_matter(doc: Document) -> None:
             set_text(p, KEYWORDS_ZH, "Normal")
         elif t.startswith("Keywords:"):
             set_text(p, KEYWORDS_EN, "Normal")
-        elif t == "指導教授：蔡鈺鼎 教授":
-            # add student line after advisor if missing
-            pass
 
     has_student = any("研究生" in p.text for p in doc.paragraphs)
     if not has_student:

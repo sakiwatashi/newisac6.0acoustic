@@ -96,42 +96,47 @@ CHAPTER2 = [
         "需再次強調：RTX Acoustic 目前標示為 experimental，文件亦未保證與實機 CH201 或 PRA 波形一致。"
         "本研究將其視為「可控幾何下之合成觀測來源」，而非物理 ground truth。",
     ),
-    ("Header2", "2.5 PyRoomAcoustics 房間聲學基線"),
+    ("Header2", "2.5 閉環感知、機器人接近與視覺語義操作對照"),
     (
         "Content",
-        "為避免單一模擬器之模型偏差，本研究引入 PyRoomAcoustics（Scheibler 等, 2018）"
-        "作為幾何聲學基線。Brinkmann 等（2019）之 round-robin 研究顯示，不同房間聲學模擬器對 RIR 之預測存在系統性差異，"
-        "故跨模擬器比較應限於趨勢級（trend-level）對照，而非波形級等價檢定。",
+        "非視覺機器人接近控制文獻多結合主動聲學、ToF 或觸覺作 last-meter 感知。"
+        "與端到端視覺—語言—動作（VLM）管線相比，本研究不宣稱全任務語義操作，"
+        "而聚焦於「已知搜尋走廊內、以超聲特徵驅動之距離趨勢接近」。"
+        "此定位與 VLM 粗定位 + 非視覺精接近之 hybrid 架構互補，而非直接取代。",
     ),
     (
         "Content",
-        "在特徵—距離推理文獻方面，dEchorate 資料集（2021）提供標定 RIR 與回波特徵，"
-        "支撐以聲學摘要特徵進行距離相關學習之可行性。"
-        "本研究 Phase 3 以 PRA 萃取 early energy、RT60 等與 RTX 同幾何對齊，"
-        "於 n=6 距離點觀察到 early energy 中度正相關趨勢（Spearman ρ≈+0.66, p≈0.16），"
-        "惟樣本數有限且未達顯著，僅作 pilot cross-model characterization；"
-        "振幅尺度與飽和行為亦不同，再次印證「趨勢可對、波形不等」之 claim boundary。",
+        "在狀態估計與 Physical AI 脈絡下，機器人操作常需將感測觀測映射為離散階段標籤（如 near、stop region）。"
+        "本研究以隨機化 Sim 協定檢驗：當幾何起點與目標橫向位置變化時，"
+        "聲學特徵是否仍含可測量信號，並以 open-loop baseline 對照閉環控制器之區域到達率改善。",
     ),
-    ("Header2", "2.6 文獻缺口與本研究定位"),
+    ("Header2", "2.6 Physical AI 狀態估計與模擬可審計性"),
     (
         "Content",
-        "綜合前述各面向，現有文獻多覆蓋子集而非完整交集：Isaac Sim 平台研究（F2）鮮少同時處理 RTX Acoustic 距離可重複性；"
-        "聲學機器人研究（F4/F6）多未提供 Isaac／Omniverse 可審計管線；"
-        "Isaac Lab 閉環 RL（F7）亦少見以 RTX GMO 為觀測源之距離估計實驗。"
-        "在工業固定 TCP 手臂場景下，同時整合上述要素之公開工作仍屬稀疏。",
+        "Physical AI 強調從物理世界觀測學習可解釋狀態表示。"
+        "本研究之離線 ablation（acoustic_only vs pose_only vs all_features）"
+        "屬趨勢級 feasibility，目的在證明 RTX GMO 特徵含狀態資訊，"
+        "而非宣稱已得可部署之端到端策略。",
+    ),
+    ("Header2", "2.7 文獻缺口與本研究定位"),
+    (
+        "Content",
+        "綜合前述各面向，現有文獻多覆蓋子集而非完整交集：Isaac Sim 平台研究鮮少同時處理 RTX Acoustic 可重複性與閉環接近；"
+        "聲學機器人研究多未提供可審計 Passport 管線；"
+        "VLM 操作研究則少見以 RTX 超聲作 last-meter 非視覺閉環。"
+        "在 UR10e 工業手臂 + 腕部超聲場景下，同時整合上述要素之公開工作仍屬稀疏。",
     ),
     (
         "Content",
-        "Xu 等（2024）論述製造數位雙生需可重現模擬管線，呼應本學程之智能製造脈絡。"
-        "本研究定位為 simulation-based feasibility pipeline（模擬可行性管線）"
-        "與 methodological bridge（Sim 靜態校準 → Lab 動態觀測 → 可選 in-sim RL）："
-        "以 Geometry／Material Passport、30/30 可重複性協定與 replication package 提供可審計證據，"
-        "並以監督學習（§4.6, r≈0.47）示範趨勢級距離推理，而非宣稱部署級測距或波形等價。",
+        "本研究定位為 simulation-based feasibility pipeline（模擬可行性管線）："
+        "Phase A 以 Geometry／Material Passport 與 30/30 協定建立特徵可審計性；"
+        "Phase B/C 以閉環接近與隨機化 Physical AI 資料集驗證狀態信號與區域到達改善；"
+        "Tier B contact-only 夾取僅作下游評估與限制說明，而非主貢獻。",
     ),
     (
         "Content",
         "因此，本論文貢獻不在提出新聲學物理模型，而在填補 G0 缺口："
-        "建立 UR10 固定 TCP + RTX Acoustic + Isaac Lab 延伸之端到端可重現工作流程，"
+        "建立 UR10 系列 + RTX Acoustic + 閉環接近 + 離線狀態估計之可重現 Sim 工作流程，"
         "為後續 CH201 實機 task-level 驗證預留協定與評估邊界。",
     ),
 ]
