@@ -177,6 +177,7 @@ def apply_room_and_target_materials(
     *,
     Cube: Any,
     NonVisualMaterial: Any,
+    table_prim_path: str | None = None,
 ) -> dict[str, Any]:
     key = normalize_condition_id(condition_id)
     if key is None:
@@ -185,9 +186,15 @@ def apply_room_and_target_materials(
     room_ids: dict[str, int] = {}
     for path in room_prim_paths:
         room_ids[path] = apply_nonvisual_material(path, spec["room"], Cube=Cube, NonVisualMaterial=NonVisualMaterial)
+    table_id = None
+    if table_prim_path:
+        table_id = apply_nonvisual_material(
+            table_prim_path, spec["room"], Cube=Cube, NonVisualMaterial=NonVisualMaterial
+        )
     target_id = apply_nonvisual_material(target_prim_path, spec["target"], Cube=Cube, NonVisualMaterial=NonVisualMaterial)
     summary = condition_summary(key)
     summary["room_material_ids"] = room_ids
+    summary["table_material_id"] = table_id
     summary["target_material_id"] = target_id
     summary["nv_material_verification"] = verify_material_bindings(summary, NonVisualMaterial=NonVisualMaterial)
     return summary

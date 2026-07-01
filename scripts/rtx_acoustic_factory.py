@@ -343,3 +343,346 @@ def assess_gmo_capture_quality(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "valid": len(issues) == 0,
         "issues": issues,
     }
+
+
+@dataclass(frozen=True)
+class AcousticFeatureFrame:
+    """Tier-B fused RTX GMO features for closed-loop approach/grasp."""
+
+    gmo_valid: bool
+    early_energy: float
+    ref_early_energy: float
+    tof_ns: float
+    ref_tof_ns: float
+    peak_amplitude: float
+    ref_peak_amplitude: float
+    amplitude_mean: float
+    amplitude_std: float
+    all_sgw_peak_mean: float
+    all_sgw_peak_std: float
+    num_signal_ways: int
+    rx_early_energy_0: float
+    rx_early_energy_1: float
+    rx_tof_ns_0: float
+    rx_tof_ns_1: float
+    rx_energy_balance: float
+    rx_tof_delta_ns: float
+    waveform_early_fraction: float
+    estimated_distance_energy_m: float
+    estimated_distance_tof_m: float
+    fused_distance_m: float
+    alignment_score: float
+
+    def as_log_dict(self) -> dict[str, float | int | bool]:
+        return {
+            "gmo_valid": self.gmo_valid,
+            "early_energy": self.early_energy,
+            "ref_early_energy": self.ref_early_energy,
+            "tof_ns": self.tof_ns,
+            "ref_tof_ns": self.ref_tof_ns,
+            "peak_amplitude": self.peak_amplitude,
+            "amplitude_mean": self.amplitude_mean,
+            "amplitude_std": self.amplitude_std,
+            "all_sgw_peak_std": self.all_sgw_peak_std,
+            "num_signal_ways": self.num_signal_ways,
+            "rx_energy_balance": self.rx_energy_balance,
+            "rx_tof_delta_ns": self.rx_tof_delta_ns,
+            "waveform_early_fraction": self.waveform_early_fraction,
+            "estimated_distance_energy_m": self.estimated_distance_energy_m,
+            "estimated_distance_tof_m": self.estimated_distance_tof_m,
+            "fused_distance_m": self.fused_distance_m,
+            "alignment_score": self.alignment_score,
+        }
+
+
+def _safe_float(value: Any, default: float = math.nan) -> float:
+    try:
+        out = float(value)
+    except (TypeError, ValueError):
+        return default
+    return out if math.isfinite(out) else default
+
+
+def _interp_monotonic_table(
+    value: float,
+    points: tuple[tuple[float, float], ...],
+    *,
+    ascending_key: bool,
+) -> float:
+    if not math.isfinite(value) or not points:
+        return math.nan
+    ordered = sorted(points, key=lambda p: p[0], reverse=not ascending_key)
+    if ascending_key:
+        if value <= ordered[0][0]:
+            return ordered[0][1]
+        if value >= ordered[-1][0]:
+            return ordered[-1][1]
+        for (k_lo, d_lo), (k_hi, d_hi) in zip(ordered, ordered[1:]):
+            if k_lo <= value <= k_hi:
+                if abs(k_hi - k_lo) < 1e-12:
+                    return d_lo
+                t = (value - k_lo) / (k_hi - k_lo)
+                return d_lo + t * (d_hi - d_lo)
+    else:
+        if value >= ordered[0][0]:
+            return ordered[0][1]
+        if value <= ordered[-1][0]:
+            return ordered[-1][1]
+        for (k_hi, d_hi), (k_lo, d_lo) in zip(ordered, ordered[1:]):
+            if k_lo <= value <= k_hi:
+                if abs(k_hi - k_lo) < 1e-12:
+                    return d_hi
+                t = (value - k_lo) / (k_hi - k_lo)
+                return d_lo + t * (d_hi - d_lo)
+    return math.nan
+
+
+def estimate_distance_from_energy(early_energy: float, points: tuple[tuple[float, float], ...]) -> float:
+    return _interp_monotonic_table(float(early_energy), points, ascending_key=False)
+
+
+def estimate_distance_from_tof(tof_ns: float, points: tuple[tuple[float, float], ...]) -> float:
+    return _interp_monotonic_table(float(tof_ns), points, ascending_key=True)
+
+
+def fuse_distance_estimates(
+    distance_energy_m: float,
+    distance_tof_m: float,
+    *,
+    energy_weight: float,
+    tof_ns: float | None = None,
+    min_valid_tof_ns: float = 1.0e5,
+) -> float:
+    weight = min(1.0, max(0.0, float(energy_weight)))
+    values: list[tuple[float, float]] = []
+    if math.isfinite(distance_energy_m):
+        values.append((distance_energy_m, weight))
+    tof_usable = math.isfinite(distance_tof_m)
+    if tof_ns is not None:
+        tof_usable = tof_usable and math.isfinite(tof_ns) and float(tof_ns) >= float(min_valid_tof_ns)
+    if tof_usable:
+        values.append((distance_tof_m, 1.0 - weight))
+    if not values:
+        return math.nan
+    denom = sum(w for _, w in values)
+    if denom <= 0.0:
+        return math.nan
+    return float(sum(d * w for d, w in values) / denom)
+
+
+def _rx_channel_stats(ways: list[SignalWayStats]) -> tuple[float, float, float, float, float, float]:
+    rx_energy: dict[int, list[float]] = {}
+    rx_tof: dict[int, list[float]] = {}
+    for way in ways:
+        if not math.isfinite(way.early_energy):
+            continue
+        rx_energy.setdefault(int(way.rx_id), []).append(float(way.early_energy))
+        if math.isfinite(way.first_time_offset_ns):
+            rx_tof.setdefault(int(way.rx_id), []).append(float(way.first_time_offset_ns))
+    e0 = float(sum(rx_energy.get(0, [])) / max(1, len(rx_energy.get(0, [])))) if 0 in rx_energy else math.nan
+    e1 = float(sum(rx_energy.get(1, [])) / max(1, len(rx_energy.get(1, [])))) if 1 in rx_energy else math.nan
+    t0 = float(sum(rx_tof.get(0, [])) / max(1, len(rx_tof.get(0, [])))) if 0 in rx_tof else math.nan
+    t1 = float(sum(rx_tof.get(1, [])) / max(1, len(rx_tof.get(1, [])))) if 1 in rx_tof else math.nan
+    denom = (abs(e0) + abs(e1)) if math.isfinite(e0) and math.isfinite(e1) else math.nan
+    balance = (e0 - e1) / denom if math.isfinite(denom) and denom > 1e-9 else 0.0
+    tof_delta = (t0 - t1) if math.isfinite(t0) and math.isfinite(t1) else math.nan
+    return e0, e1, t0, t1, balance, tof_delta
+
+
+def _waveform_early_fraction(gmo: Any, np: Any, *, fraction: float = 0.25) -> float:
+    n = int(getattr(gmo, "numElements", 0) or 0)
+    if n <= 0:
+        return math.nan
+    amps = np.abs(np.asarray(np.ctypeslib.as_array(gmo.scalar, shape=(n,)), dtype=float))
+    amps = amps[np.isfinite(amps)]
+    if amps.size == 0:
+        return math.nan
+    total = float(np.sum(amps))
+    if total <= 1e-12:
+        return math.nan
+    count = max(4, int(math.ceil(amps.size * fraction)))
+    return float(np.sum(amps[:count]) / total)
+
+
+def build_acoustic_features(
+    *,
+    gmo_valid: bool,
+    early_energy: float,
+    ref_early_energy: float,
+    tof_ns: float,
+    ref_tof_ns: float,
+    peak_amplitude: float,
+    ref_peak_amplitude: float,
+    amplitude_mean: float,
+    amplitude_std: float,
+    all_sgw_peak_mean: float,
+    all_sgw_peak_std: float,
+    num_signal_ways: int,
+    rx_early_energy_0: float,
+    rx_early_energy_1: float,
+    rx_tof_ns_0: float,
+    rx_tof_ns_1: float,
+    rx_energy_balance: float,
+    rx_tof_delta_ns: float,
+    waveform_early_fraction: float,
+    energy_calibration: tuple[tuple[float, float], ...],
+    tof_calibration: tuple[tuple[float, float], ...],
+    fusion_energy_weight: float,
+) -> AcousticFeatureFrame:
+    distance_energy = estimate_distance_from_energy(early_energy, energy_calibration)
+    distance_tof = estimate_distance_from_tof(tof_ns, tof_calibration)
+    fused = fuse_distance_estimates(
+        distance_energy,
+        distance_tof,
+        energy_weight=fusion_energy_weight,
+        tof_ns=tof_ns,
+    )
+    ref_component = ref_early_energy if math.isfinite(ref_early_energy) else 0.0
+    balance_penalty = abs(rx_energy_balance) if math.isfinite(rx_energy_balance) else 0.0
+    alignment_score = (
+        (early_energy if math.isfinite(early_energy) else 0.0)
+        + 0.35 * ref_component
+        + 0.20 * (peak_amplitude if math.isfinite(peak_amplitude) else 0.0)
+        - 25.0 * balance_penalty
+    )
+    return AcousticFeatureFrame(
+        gmo_valid=bool(gmo_valid),
+        early_energy=float(early_energy),
+        ref_early_energy=float(ref_early_energy),
+        tof_ns=float(tof_ns),
+        ref_tof_ns=float(ref_tof_ns),
+        peak_amplitude=float(peak_amplitude),
+        ref_peak_amplitude=float(ref_peak_amplitude),
+        amplitude_mean=float(amplitude_mean),
+        amplitude_std=float(amplitude_std),
+        all_sgw_peak_mean=float(all_sgw_peak_mean),
+        all_sgw_peak_std=float(all_sgw_peak_std),
+        num_signal_ways=int(num_signal_ways),
+        rx_early_energy_0=float(rx_early_energy_0),
+        rx_early_energy_1=float(rx_early_energy_1),
+        rx_tof_ns_0=float(rx_tof_ns_0),
+        rx_tof_ns_1=float(rx_tof_ns_1),
+        rx_energy_balance=float(rx_energy_balance),
+        rx_tof_delta_ns=float(rx_tof_delta_ns),
+        waveform_early_fraction=float(waveform_early_fraction),
+        estimated_distance_energy_m=float(distance_energy),
+        estimated_distance_tof_m=float(distance_tof),
+        fused_distance_m=float(fused),
+        alignment_score=float(alignment_score),
+    )
+
+
+def acoustic_features_from_gmo(
+    gmo: Any,
+    np: Any,
+    *,
+    energy_calibration: tuple[tuple[float, float], ...],
+    tof_calibration: tuple[tuple[float, float], ...],
+    fusion_energy_weight: float,
+) -> AcousticFeatureFrame:
+    summary = summarize_gmo_frame(gmo, np)
+    ways = parse_signal_ways(gmo, np)
+    e0, e1, t0, t1, balance, tof_delta = _rx_channel_stats(ways)
+    waveform_frac = _waveform_early_fraction(gmo, np)
+    return build_acoustic_features(
+        gmo_valid=bool(summary.get("gmo_valid")),
+        early_energy=_safe_float(summary.get("primary_sgw_early_energy")),
+        ref_early_energy=_safe_float(summary.get("ref_sgw_early_energy")),
+        tof_ns=_safe_float(summary.get("primary_sgw_first_time_offset_ns")),
+        ref_tof_ns=_safe_float(summary.get("ref_sgw_first_time_offset_ns")),
+        peak_amplitude=_safe_float(summary.get("primary_sgw_peak")),
+        ref_peak_amplitude=_safe_float(summary.get("ref_sgw_peak")),
+        amplitude_mean=_safe_float(summary.get("amplitude_mean")),
+        amplitude_std=_safe_float(summary.get("amplitude_std")),
+        all_sgw_peak_mean=_safe_float(summary.get("all_sgw_peak_mean")),
+        all_sgw_peak_std=_safe_float(summary.get("all_sgw_peak_std")),
+        num_signal_ways=int(summary.get("num_signal_ways", 0) or 0),
+        rx_early_energy_0=e0,
+        rx_early_energy_1=e1,
+        rx_tof_ns_0=t0,
+        rx_tof_ns_1=t1,
+        rx_energy_balance=balance,
+        rx_tof_delta_ns=tof_delta,
+        waveform_early_fraction=waveform_frac,
+        energy_calibration=energy_calibration,
+        tof_calibration=tof_calibration,
+        fusion_energy_weight=fusion_energy_weight,
+    )
+
+
+def acoustic_features_from_summary(
+    summary: dict[str, Any] | None,
+    *,
+    energy_calibration: tuple[tuple[float, float], ...],
+    tof_calibration: tuple[tuple[float, float], ...],
+    fusion_energy_weight: float,
+) -> AcousticFeatureFrame:
+    if not summary:
+        return build_acoustic_features(
+            gmo_valid=False,
+            early_energy=math.nan,
+            ref_early_energy=math.nan,
+            tof_ns=math.nan,
+            ref_tof_ns=math.nan,
+            peak_amplitude=math.nan,
+            ref_peak_amplitude=math.nan,
+            amplitude_mean=math.nan,
+            amplitude_std=math.nan,
+            all_sgw_peak_mean=math.nan,
+            all_sgw_peak_std=math.nan,
+            num_signal_ways=0,
+            rx_early_energy_0=math.nan,
+            rx_early_energy_1=math.nan,
+            rx_tof_ns_0=math.nan,
+            rx_tof_ns_1=math.nan,
+            rx_energy_balance=math.nan,
+            rx_tof_delta_ns=math.nan,
+            waveform_early_fraction=math.nan,
+            energy_calibration=energy_calibration,
+            tof_calibration=tof_calibration,
+            fusion_energy_weight=fusion_energy_weight,
+        )
+    return build_acoustic_features(
+        gmo_valid=bool(summary.get("gmo_valid")),
+        early_energy=_safe_float(summary.get("primary_sgw_early_energy")),
+        ref_early_energy=_safe_float(summary.get("ref_sgw_early_energy")),
+        tof_ns=_safe_float(summary.get("primary_sgw_first_time_offset_ns")),
+        ref_tof_ns=_safe_float(summary.get("ref_sgw_first_time_offset_ns")),
+        peak_amplitude=_safe_float(summary.get("primary_sgw_peak")),
+        ref_peak_amplitude=_safe_float(summary.get("ref_sgw_peak")),
+        amplitude_mean=_safe_float(summary.get("amplitude_mean")),
+        amplitude_std=_safe_float(summary.get("amplitude_std")),
+        all_sgw_peak_mean=_safe_float(summary.get("all_sgw_peak_mean")),
+        all_sgw_peak_std=_safe_float(summary.get("all_sgw_peak_std")),
+        num_signal_ways=int(summary.get("num_signal_ways", 0) or 0),
+        rx_early_energy_0=_safe_float(summary.get("rx_early_energy_0")),
+        rx_early_energy_1=_safe_float(summary.get("rx_early_energy_1")),
+        rx_tof_ns_0=_safe_float(summary.get("rx_tof_ns_0")),
+        rx_tof_ns_1=_safe_float(summary.get("rx_tof_ns_1")),
+        rx_energy_balance=_safe_float(summary.get("rx_energy_balance")),
+        rx_tof_delta_ns=_safe_float(summary.get("rx_tof_delta_ns")),
+        waveform_early_fraction=_safe_float(summary.get("waveform_early_fraction")),
+        energy_calibration=energy_calibration,
+        tof_calibration=tof_calibration,
+        fusion_energy_weight=fusion_energy_weight,
+    )
+
+
+def enrich_gmo_summary(summary: dict[str, Any], gmo: Any, np: Any) -> dict[str, Any]:
+    """Attach dual-RX and waveform features to a summarize_gmo_frame dict."""
+    ways = parse_signal_ways(gmo, np)
+    e0, e1, t0, t1, balance, tof_delta = _rx_channel_stats(ways)
+    waveform_frac = _waveform_early_fraction(gmo, np)
+    enriched = dict(summary)
+    enriched.update(
+        {
+            "rx_early_energy_0": e0,
+            "rx_early_energy_1": e1,
+            "rx_tof_ns_0": t0,
+            "rx_tof_ns_1": t1,
+            "rx_energy_balance": balance,
+            "rx_tof_delta_ns": tof_delta,
+            "waveform_early_fraction": waveform_frac,
+        }
+    )
+    return enriched
