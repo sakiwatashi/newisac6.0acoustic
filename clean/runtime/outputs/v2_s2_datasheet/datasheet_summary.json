@@ -1,0 +1,143 @@
+{
+  "scan_dir": "runtime/outputs/v2_s2_datasheet",
+  "distance": {
+    "combined": {
+      "label": "combined_p1_p3",
+      "n_total": 60,
+      "n_kept": 48,
+      "n_excluded_drift": 12,
+      "excluded_point_indices": [
+        "6",
+        "9",
+        "10",
+        "11",
+        "6",
+        "9",
+        "10",
+        "11",
+        "6",
+        "9",
+        "10",
+        "11"
+      ],
+      "slope_sample_per_m": 56.56241411531907,
+      "intercept_samples": -4.070356730610676,
+      "pearson_r": 0.9994126335585268,
+      "t_cal_s": 0.00010308795834278672,
+      "t_cal_us": 103.08795834278672,
+      "distance_rmse_m": 0.012075629974891753
+    },
+    "per_pass": {
+      "distance_p1": {
+        "label": "distance_p1",
+        "n_total": 20,
+        "n_kept": 16,
+        "n_excluded_drift": 4,
+        "excluded_point_indices": [
+          "6",
+          "9",
+          "10",
+          "11"
+        ],
+        "slope_sample_per_m": 56.56241411531907,
+        "intercept_samples": -4.070356730610676,
+        "pearson_r": 0.9994126335585266,
+        "t_cal_s": 0.00010308795834278672,
+        "t_cal_us": 103.08795834278672,
+        "distance_rmse_m": 0.012075629974891753
+      },
+      "distance_p2": {
+        "label": "distance_p2",
+        "n_total": 20,
+        "n_kept": 16,
+        "n_excluded_drift": 4,
+        "excluded_point_indices": [
+          "6",
+          "9",
+          "10",
+          "11"
+        ],
+        "slope_sample_per_m": 56.56241411531907,
+        "intercept_samples": -4.070356730610676,
+        "pearson_r": 0.9994126335585266,
+        "t_cal_s": 0.00010308795834278672,
+        "t_cal_us": 103.08795834278672,
+        "distance_rmse_m": 0.012075629974891753
+      },
+      "distance_p3": {
+        "label": "distance_p3",
+        "n_total": 20,
+        "n_kept": 16,
+        "n_excluded_drift": 4,
+        "excluded_point_indices": [
+          "6",
+          "9",
+          "10",
+          "11"
+        ],
+        "slope_sample_per_m": 56.56241411531907,
+        "intercept_samples": -4.070356730610676,
+        "pearson_r": 0.9994126335585266,
+        "t_cal_s": 0.00010308795834278672,
+        "t_cal_us": 103.08795834278672,
+        "distance_rmse_m": 0.012075629974891753
+      }
+    },
+    "tableh": {
+      "label": "distance_tableh",
+      "n_total": 20,
+      "n_kept": 13,
+      "n_excluded_drift": 7,
+      "excluded_point_indices": [
+        "0",
+        "1",
+        "2",
+        "6",
+        "9",
+        "10",
+        "11"
+      ],
+      "slope_sample_per_m": 57.86642780138303,
+      "intercept_samples": -4.98570311650456,
+      "pearson_r": 0.9998224670495846,
+      "t_cal_s": 0.00010076488236151502,
+      "t_cal_us": 100.76488236151502,
+      "distance_rmse_m": 0.005339182732995167
+    }
+  },
+  "lateral": {
+    "n_total": 13,
+    "n_kept": 8,
+    "n_excluded_drift": 5,
+    "excluded_point_indices": [
+      "1",
+      "2",
+      "6",
+      "10",
+      "11"
+    ],
+    "spearman_rho": 0.3571428571428572
+  },
+  "repeat": {
+    "n_trials": 10,
+    "n_valid": 10,
+    "peak_idx_mode": 24,
+    "peak_idx_mode_count": 10,
+    "peak_idx_range": 0.0,
+    "early_energy_cv": 3.707048704970705e-08
+  },
+  "adjudication": {
+    "distance_r_ge_0.95": true,
+    "lateral_monotonic_ge_0.9": false,
+    "repeat_cv_lt_5pct": true
+  },
+  "info": {
+    "table_height_r": 0.9998224670495846,
+    "t_cal_us": 103.08795834278672
+  },
+  "thresholds": {
+    "distance_r": 0.95,
+    "lateral_rho": 0.9,
+    "repeat_cv": 0.05
+  }
+}

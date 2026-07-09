@@ -1,0 +1,63 @@
+{
+  "cell_id": "D_d0.8_z0.10_p0_ctablearm",
+  "target_distance_m": 0.8,
+  "target_size_m": 0.1,
+  "sensor_pitch_deg": 0.0,
+  "clutter": "table_arm",
+  "sensor_pos_m": [
+    0.0,
+    0.0,
+    0.65
+  ],
+  "notes": "block D",
+  "target_created": true,
+  "target_center_m": [
+    0.8,
+    0.0,
+    0.65
+  ],
+  "table_built": true,
+  "arm_built": true,
+  "assets_root_used": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0",
+  "with_target": {
+    "peak_sample_idx": 41.0,
+    "early_energy": 28.644637954818315,
+    "n_samples": 320,
+    "n_frames_averaged": 6,
+    "n_samples_per_sgw": 320.0,
+    "settle_frames": 40,
+    "converged": true
+  },
+  "noise_ref": {
+    "peak_sample_idx": 41.0,
+    "early_energy": 27.836846920845144,
+    "n_samples": 320,
+    "n_frames_averaged": 6,
+    "n_samples_per_sgw": 320.0,
+    "settle_frames": 40,
+    "converged": true
+  },
+  "without_target": {
+    "label": "without_target",
+    "peak_sample_idx": 19.0,
+    "early_energy": 34.3622108221575,
+    "n_samples": 320,
+    "n_frames_averaged": 6,
+    "n_samples_per_sgw": 320.0,
+    "settle_frames": 40,
+    "converged": true
+  },
+  "noise_floor_peak": 0.6846912900606791,
+  "noise_floor_energy": 57.239849199851356,
+  "snr_peak": 67.67129709522538,
+  "snr_energy": 2.0819170634507707,
+  "energy_drift_rel": 0.028200427432433034,
+  "stationarity_ok": true,
+  "waveform_lengths_truncated": false,
+  "n_samples_common": 320,
+  "n_measure": 6,
+  "n_settle": 40,
+  "timestamp": "2026-07-08T17:17:55.119370",
+  "script": "paired_capture_runner.py",
+  "warmup_frames": 20
+}

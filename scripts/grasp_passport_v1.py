@@ -34,6 +34,12 @@ PASSPORT_VERSION = "v1.0"
 PASSPORT_ID = "ur10_ultrasonic_closed_loop_grasp"
 EXPERIMENT_MODE = "ultrasonic_closed_loop_grasp_v1"
 
+# Peak-sample distance calibration (arm-free sweep 2026-07-06, r=0.9991, n=280).
+# dist_m = peak_sample_idx * PEAK_SAMPLE_T_US * PEAK_SAMPLE_V_SOUND_M_S / 2
+# Valid range: 0.20–1.50 m; sample period empirically confirmed frequency-agnostic.
+PEAK_SAMPLE_T_US: float = 132.5e-6     # s/sample (40 kHz sweep calibration)
+PEAK_SAMPLE_V_SOUND_M_S: float = 343.0  # m/s (indoor air ~20°C)
+
 # Scene prims
 TABLE_PRIM_PATH = "/World/work_table"
 WRENCH_PRIM_PATH = "/World/wrench_target"
@@ -133,18 +139,18 @@ LIFT_SUCCESS_MIN_Z_DELTA_M = 0.04
 # Open-loop baseline only (oracle target pose — not used by closed-loop controller)
 OPEN_LOOP_PREGRASP_IK_BACKOFFS_M = (0.0, 0.05, 0.12, 0.20)
 
-# Dynamic-approach calibration (UR10e+Robotiq, wrist_3 sensor mount, trial-9 sweep 2026-06-30).
-# Phase A fixed-TCP energies do not transfer. ee_link mount was static — do not reuse old table.
-# Monotonic early_energy→distance (UR10e wrist_3 mount, trial-9 dynamic approach 2026-06-30).
+# [DEPRECATED] early_energy → distance lookup.
+# Only reliable for d < 0.45 m (first 20 samples); collapses to noise floor beyond that.
+# Retained for backward compatibility. Use PEAK_SAMPLE_T_US formula instead.
 DEFAULT_CALIBRATION: tuple[tuple[float, float], ...] = (
-    (221.0, 0.85),
-    (155.0, 0.72),
-    (148.0, 0.65),
-    (140.0, 0.50),
-    (136.0, 0.40),
-    (132.0, 0.30),
-    (128.0, 0.25),
-    (95.0, 0.22),
+    (192.8, 0.90),
+    (160.7, 0.80),
+    (154.1, 0.60),
+    (140.2, 0.50),
+    (138.5, 0.45),
+    (131.8, 0.35),
+    (106.2, 0.20),
+    (87.2, 0.10),
 )
 
 # Tier B: fuse RTX GMO features (energy + TOF + dual-RX + lateral micro-align).
@@ -380,6 +386,8 @@ def passport_summary() -> dict[str, Any]:
         "max_approach_steps": MAX_APPROACH_STEPS,
         "center_frequency_hz": CENTER_FREQUENCY_HZ,
         "tick_rate_hz": TICK_RATE_HZ,
+        "peak_sample_t_us": PEAK_SAMPLE_T_US,
+        "peak_sample_v_sound_m_s": PEAK_SAMPLE_V_SOUND_M_S,
         "calibration_points": list(DEFAULT_CALIBRATION),
         "tof_calibration_points": list(DEFAULT_TOF_CALIBRATION),
         "acoustic_control_tier": ACOUSTIC_CONTROL_TIER,

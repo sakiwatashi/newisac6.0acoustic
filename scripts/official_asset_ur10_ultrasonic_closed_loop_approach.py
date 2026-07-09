@@ -202,7 +202,7 @@ def main() -> None:
     sensor_mount_path = resolve_sensor_mount_path(robot_path, stage)
     sensor_path = f"{sensor_mount_path}/{SENSOR_PRIM_NAME}"
 
-    room_prim_paths = create_six_wall_room(Cube, np)
+    room_prim_paths = create_six_wall_room(Cube, np, open_space=True)
     Cube(
         WRENCH_PRIM_PATH,
         positions=np.array(spawn.position_m, dtype=float),

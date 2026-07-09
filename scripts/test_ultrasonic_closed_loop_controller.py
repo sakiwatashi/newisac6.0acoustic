@@ -51,10 +51,14 @@ def _features(
 class UltrasonicClosedLoopControllerTests(unittest.TestCase):
     def test_calibration_interpolation(self) -> None:
         cal = DistanceCalibration()
-        d = cal.estimate_distance_m(160.0)
+        d = cal.estimate_distance_m(22.0)
         self.assertTrue(math.isfinite(d))
-        self.assertGreater(d, 0.5)
-        self.assertLess(d, 3.0)
+        # 22 * 132.5e-6 * 343.0 / 2 = 0.4999...
+        self.assertAlmostEqual(d, 22.0 * 132.5e-6 * 343.0 / 2.0, places=9)
+        self.assertGreater(d, 0.45)
+        self.assertLess(d, 0.55)
+        self.assertTrue(math.isnan(cal.estimate_distance_m(float("nan"))))
+        self.assertTrue(math.isnan(cal.estimate_distance_m(-1.0)))
 
     def test_reaches_descend_when_fused_distance_close(self) -> None:
         ctrl = UltrasonicClosedLoopController(

@@ -1,0 +1,32 @@
+{
+  "mode": "blind",
+  "seed": 20260708,
+  "n_episodes": 30,
+  "standoff_m": 0.35,
+  "step_m": 0.05,
+  "max_steps": 40,
+  "n_settle": 40,
+  "n_measure": 12,
+  "calib_source": "/home/lab109/song/isaacsim6.0/runtime/outputs/v2_s2_datasheet/distance_tableh/points.csv",
+  "calib_slope_sample_per_m": 57.86642780138303,
+  "calib_intercept_samples": -4.985703116504553,
+  "calib_r": 0.9998224670495846,
+  "calib_n_kept": 13,
+  "sensor_pos_m": [
+    0.0,
+    0.0,
+    0.65
+  ],
+  "target_size_m": 0.1,
+  "target_z_m": 0.45,
+  "height_diff_m": 0.2,
+  "table_center_x_m": 0.775,
+  "arm_backset_m": 0.1,
+  "corridor_end_x_m": 1.2,
+  "assets_root_used": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0",
+  "usd_path_used": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd",
+  "warmup_frames": 20,
+  "n_drift_flagged": 267,
+  "timestamp": "2026-07-08T22:53:33.741971",
+  "script": "d1_approach_runner.py"
+}

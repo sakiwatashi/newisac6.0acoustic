@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import math
 import os
 from dataclasses import dataclass
@@ -41,15 +42,6 @@ from grasp_passport_v1 import (
 )
 from acoustic_calibration_v1 import load_tier_b_calibration
 from rtx_acoustic_factory import acoustic_features_from_summary
-
-_TIER_B_CAL: tuple | None = None
-
-
-def _tier_b_calibration_tables() -> tuple:
-    global _TIER_B_CAL
-    if _TIER_B_CAL is None:
-        _TIER_B_CAL = load_tier_b_calibration()
-    return _TIER_B_CAL
 from ur10e_robotiq_common import (
     apply_arm_delta_rad,
     joint_space_lower_ee,
@@ -65,8 +57,18 @@ from ur10e_robotiq_passport_v1 import SEED_POSES_RAD, tool0_z_m
 from ultrasonic_closed_loop_controller import (
     ControllerConfig,
     ControllerState,
+    DistanceCalibration,
     UltrasonicClosedLoopController,
 )
+
+_TIER_B_CAL: tuple | None = None
+
+
+def _tier_b_calibration_tables() -> tuple:
+    global _TIER_B_CAL
+    if _TIER_B_CAL is None:
+        _TIER_B_CAL = load_tier_b_calibration()
+    return _TIER_B_CAL
 
 
 def to_jsonable(value: Any) -> Any:
@@ -181,43 +183,43 @@ def reset_scene_for_next_episode(
 
 
 def setup_surface_gripper(stage: Any, ee_path: str, *, GripperView: Any, create_surface_gripper: Any) -> tuple[str, Any | None, Any | None]:
-    gripper_parent = "/World"
-    gripper_prim = create_surface_gripper(stage, gripper_parent)
+    # Parent the gripper under ee_link so it moves with the arm and is registered
+    # correctly by the SurfaceGripper C++ plugin. The expected path matches
+    # surface_gripper_path() from grasp_passport_v1.
+    #
+    # If the prim was pre-created before world.reset() (so the C++ plugin can register it
+    # during physics init), reuse it rather than creating a duplicate via get_stage_next_free_path.
+    _expected = f"{ee_path}/SurfaceGripper"
+    if stage.GetPrimAtPath(_expected):
+        gripper_prim = stage.GetPrimAtPath(_expected)
+    else:
+        gripper_prim = create_surface_gripper(stage, ee_path)
     path = str(gripper_prim.GetPath())
 
-    # Isaac SurfaceGripper requires at least one attachment point. Place it near
-    # the contact point reached by the UR10 tool0 grasp pose rather than at the
-    # ee_link origin, which is too far from the target block.
-    try:
-        import importlib.util
-        from pathlib import Path
+    # Isaac SurfaceGripper requires at least one attachment point. Place it at
+    # the contact tip ahead of the ee_link origin along +X.
+    # If the joint was pre-created before world.reset() (so physics initializes it), reuse it.
+    joint_path = f"{path}/attachment_point_0"
+    if not stage.GetPrimAtPath(joint_path):
+        try:
+            from pxr import Gf, Sdf, UsdPhysics
+            from usd.schema.isaac import robot_schema
 
-        from pxr import Gf, Sdf, UsdPhysics
-
-        schema_path = (
-            Path(__file__).resolve().parents[1]
-            / "app/exts/isaacsim.robot.schema/usd/schema/isaac/robot_schema/__init__.py"
-        )
-        spec = importlib.util.spec_from_file_location("_isaac_robot_schema_runtime", schema_path)
-        if spec is None or spec.loader is None:
-            raise RuntimeError(f"Could not load robot_schema from {schema_path}")
-        robot_schema = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(robot_schema)
-
-        joint_path = f"{path}/attachment_point_0"
-        joint = UsdPhysics.Joint.Define(stage, joint_path)
-        joint.CreateBody0Rel().SetTargets([ee_path])
-        joint.CreateLocalPos0Attr().Set(Gf.Vec3f(0.03, 0.0, -0.06))
-        joint.CreateLocalRot0Attr().Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
-        joint.CreateLocalPos1Attr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
-        joint.CreateLocalRot1Attr().Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
-        robot_schema.ApplyAttachmentPointAPI(joint.GetPrim())
-        joint.GetPrim().GetAttribute(robot_schema.Attributes.FORWARD_AXIS.name).Set(UsdPhysics.Tokens.x)
-        stage.GetPrimAtPath(path).GetRelationship(robot_schema.Relations.ATTACHMENT_POINTS.name).SetTargets(
-            [Sdf.Path(joint_path)]
-        )
-    except Exception as exc:
-        print(f"SurfaceGripper attachment point setup failed: {exc}", flush=True)
+            joint = UsdPhysics.Joint.Define(stage, joint_path)
+            joint.CreateBody0Rel().SetTargets([ee_path])
+            joint.CreateLocalPos0Attr().Set(Gf.Vec3f(0.03, 0.0, -0.06))
+            joint.CreateLocalRot0Attr().Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
+            joint.CreateLocalPos1Attr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
+            joint.CreateLocalRot1Attr().Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
+            robot_schema.ApplyAttachmentPointAPI(joint.GetPrim())
+            joint.GetPrim().GetAttribute(robot_schema.Attributes.FORWARD_AXIS.name).Set(UsdPhysics.Tokens.x)
+            stage.GetPrimAtPath(path).GetRelationship(robot_schema.Relations.ATTACHMENT_POINTS.name).SetTargets(
+                [Sdf.Path(joint_path)]
+            )
+        except Exception as exc:
+            print(f"SurfaceGripper attachment point setup failed: {exc}", flush=True)
+    else:
+        print(f"SurfaceGripper reusing pre-created attachment point: {joint_path}", flush=True)
 
     view = GripperView(paths=path)
     view.set_surface_gripper_properties(
@@ -237,14 +239,30 @@ def setup_surface_gripper(stage: Any, ee_path: str, *, GripperView: Any, create_
     return path, iface, view
 
 
+# Adjudication spike (health check F1, 2026-07-08): GRASP_BLIND_APPROACH=1 replaces
+# fused/energy distance with +inf so the standoff trigger can never fire — the arm walks
+# the corridor with zero acoustic information. Control run to test whether closed-loop
+# stop behaviour differs from a sensor-blind policy. Default off; no effect otherwise.
+BLIND_APPROACH = os.environ.get("GRASP_BLIND_APPROACH", "").strip() == "1"
+if BLIND_APPROACH:
+    print("BLIND_APPROACH=1: fused/energy distance forced to +inf (F1 adjudication control run)", flush=True)
+
+
 def _acoustic_features_from_capture(fields: dict[str, Any] | None) -> Any:
     energy_cal, tof_cal, _meta = _tier_b_calibration_tables()
-    return acoustic_features_from_summary(
+    frame = acoustic_features_from_summary(
         fields,
         energy_calibration=energy_cal,
         tof_calibration=tof_cal,
         fusion_energy_weight=ACOUSTIC_FUSION_ENERGY_WEIGHT,
     )
+    if BLIND_APPROACH:
+        frame = dataclasses.replace(
+            frame,
+            fused_distance_m=math.inf,
+            estimated_distance_energy_m=math.inf,
+        )
+    return frame
 
 
 def _append_approach_history_row(
@@ -425,18 +443,16 @@ def _fusion_saturated_vs_oracle(
     runtime: GraspRuntime,
     tool0_x_m: float,
 ) -> bool:
-    """Fusion stuck high only counts when tool0 has reached the forward cap (trial-9 GUI false exit fix)."""
-    fused = float(features.fused_distance_m)
+    """Peak-dist overestimate only counts when tool0 has reached the forward cap."""
     if not _at_forward_reach_cap(runtime, tool0_x_m):
         return False
-    from ultrasonic_closed_loop_controller import ControllerConfig
-
+    peak_dist = DistanceCalibration().estimate_distance_m(features.primary_sgw_peak_sample_idx)
     standoff = float(ControllerConfig().grasp_standoff_m)
     return (
         math.isfinite(oracle_m)
         and float(oracle_m) <= standoff + 0.08
-        and math.isfinite(fused)
-        and fused > float(oracle_m) + 0.20
+        and math.isfinite(peak_dist)
+        and peak_dist > float(oracle_m) + 0.20
     )
 
 
@@ -714,18 +730,8 @@ def run_approach_loop(
                 settle=runtime.settle_steps,
             )
             if not moved:
-                fused = features.fused_distance_m
-                energy_d = features.estimated_distance_energy_m
                 standoff_slack = ControllerConfig().grasp_standoff_m + 0.12
-                if (
-                    (math.isfinite(fused) and fused <= standoff_slack)
-                    or (math.isfinite(energy_d) and energy_d <= standoff_slack + 0.08)
-                    or (
-                        math.isfinite(features.early_energy)
-                        and features.early_energy <= 138.0
-                        and obs["sensor_position"][0] >= 0.85
-                    )
-                ):
+                if math.isfinite(features.fused_distance_m) and features.fused_distance_m <= standoff_slack:
                     terminal_reason = "standoff_reached_ik_limit"
                     break
                 terminal_reason = "ik_failed"
@@ -774,7 +780,8 @@ def run_approach_loop(
                 settle=max(10, runtime.settle_steps // 2),
             )
             if not moved:
-                terminal_reason = "ik_failed_final_approach"
+                # Coarse approach already reached standoff; accept current position.
+                terminal_reason = "standoff_reached_ik_limit"
                 break
             cx, cy, cz = _tool0_xyz_m(runtime, obs["q"])
             ee_target[0], ee_target[1], ee_target[2] = cx, cy, cz

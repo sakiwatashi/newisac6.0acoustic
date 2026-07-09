@@ -1,0 +1,13 @@
+{
+  "cell_id": "C_d0.8_z0.10_p30_ctable",
+  "target_distance_m": 0.8,
+  "target_size_m": 0.1,
+  "sensor_pitch_deg": 30,
+  "clutter": "table",
+  "sensor_pos_m": [
+    0,
+    0,
+    0.65
+  ],
+  "notes": "block C"
+}

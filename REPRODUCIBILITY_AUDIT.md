@@ -199,6 +199,8 @@ python3 scripts/run_physical_ai_v8_randomized_pipeline.py \
 | README / docx 與 7/1 敘事分叉 | **進行中** | 本檔 + README 已更新；docx 待 `rebuild_thesis_six_chapters.py` |
 | SurfaceGripper 註冊失敗 | 已知 | 列為限制；需 isolated smoke 後再整合 |
 | `SEARCH_END_X_M` 含 +0.05 m 走廊 slack | 設計如此 | 見 `grasp_passport_v1.py` 與 unit test |
+| **ToF 標定表為空** | **已確認（2026-07-04）** | `tier_b_calibration.json` 中 `tof_calibration: []`；distance fusion 的 ToF 分量（w=0.28）使用 fallback 預設表，非實測資料；energy 標定（w=0.72）正常有 8 個實測點 |
+| **ρ=−0.657 標籤為 no_clear_monotonic_relation** | **已確認（2026-07-04）** | correlations.csv 的程式閾值為 \|ρ\|≥0.7；論文應以「趨勢級可行性（trend-level feasibility）」陳述，避免「單調相關」措辭 |
 
 ---
 

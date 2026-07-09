@@ -1,0 +1,88 @@
+{
+  "scan_dir": "runtime/outputs/v2_d15_arm_approach",
+  "probe": {
+    "n_total": 13,
+    "n_kept": 7,
+    "slope_sample_per_m": 64.26441512576336,
+    "intercept_samples": -7.809586747376166,
+    "pearson_r": 0.991828139838367,
+    "n_posture_violations": 0,
+    "n_sensor_pose_violations": 0
+  },
+  "arms": {
+    "closed": {
+      "mode": "closed",
+      "n_episodes": 30,
+      "n_invalid_episodes": 0,
+      "standoff_m": 0.35,
+      "stop_sensor_x_mean": 0.8016852850416687,
+      "stop_sensor_x_std": 0.07368452442924836,
+      "r_stop_target": 0.9856121200896439,
+      "stop_error_mean": 0.025273316244033193,
+      "stop_error_rmse": 0.028247878645459742,
+      "p_error_le_0.10": 1.0,
+      "n_steps_mean": 5.033333333333333,
+      "reason_counts": {
+        "standoff_est": 30
+      },
+      "n_posture_violation_steps": 0,
+      "n_sensor_pose_violation_steps": 0,
+      "n_ik_failed_steps": 0
+    },
+    "blind": {
+      "mode": "blind",
+      "n_episodes": 30,
+      "n_invalid_episodes": 0,
+      "standoff_m": 0.35,
+      "stop_sensor_x_mean": 0.950038144575816,
+      "stop_sensor_x_std": 3.387607712450221e-16,
+      "r_stop_target": -6.959597322522311e-16,
+      "stop_error_mean": 0.17360664957736666,
+      "stop_error_rmse": 0.18889483722571385,
+      "p_error_le_0.10": 0.13333333333333333,
+      "n_steps_mean": 8.0,
+      "reason_counts": {
+        "corridor_end": 30
+      },
+      "n_posture_violation_steps": 0,
+      "n_sensor_pose_violation_steps": 0,
+      "n_ik_failed_steps": 0
+    },
+    "open": {
+      "mode": "open",
+      "n_episodes": 30,
+      "n_invalid_episodes": 0,
+      "standoff_m": 0.35,
+      "stop_sensor_x_mean": 0.800017786476835,
+      "stop_sensor_x_std": 2.2584051416334807e-16,
+      "r_stop_target": -6.959597322522311e-16,
+      "stop_error_mean": 0.061873362788858306,
+      "stop_error_rmse": 0.07809778906805824,
+      "p_error_le_0.10": 0.7333333333333333,
+      "n_steps_mean": 1.0,
+      "reason_counts": {
+        "open_fixed": 30
+      },
+      "n_posture_violation_steps": 0,
+      "n_sensor_pose_violation_steps": 0,
+      "n_ik_failed_steps": 0
+    }
+  },
+  "welch_t_test_closed_vs_blind": {
+    "t": -10.579250188993074,
+    "p_approx": 0.0
+  },
+  "total_invalid_episodes": 0,
+  "adjudication": {
+    "d05_arm_mount_valid": true,
+    "d15_tracking_r_ge_0.9": true,
+    "d15_beats_blind": true,
+    "d15_posture_clean": true
+  },
+  "thresholds": {
+    "d05_r": 0.99,
+    "d15_tracking_r": 0.9,
+    "d15_beats_blind_p": 0.05,
+    "error_ok_threshold_m": 0.1
+  }
+}

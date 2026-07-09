@@ -1,0 +1,22 @@
+{
+  "mode": "repeat",
+  "pass_id": "r01",
+  "target_height": "boresight",
+  "n_settle": 40,
+  "n_measure": 12,
+  "sensor_pos_m": [
+    0.0,
+    0.0,
+    0.65
+  ],
+  "target_size_m": 0.1,
+  "table_anchor_distance_m": 0.5,
+  "arm_backset_m": 0.1,
+  "assets_root_used": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0",
+  "usd_path_used": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd",
+  "n_points": 1,
+  "n_drift_flagged": 0,
+  "warmup_frames": 20,
+  "timestamp": "2026-07-08T20:29:58.043264",
+  "script": "s2_datasheet_runner.py"
+}

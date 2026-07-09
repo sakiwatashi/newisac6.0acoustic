@@ -1,0 +1,9 @@
+{
+  "cell_id": "accept_empty",
+  "target_distance_m": 0.5,
+  "target_size_m": 0,
+  "sensor_pitch_deg": 0,
+  "clutter": "none",
+  "sensor_pos_m": [0, 0, 0.65],
+  "notes": "acceptance case (V2_HANDOFF_FOR_NEXT_AI.md §5.1): fake empty-scene cell, target_size_m=0 so no target Cube is created; expect snr ≈ 1 (noise level, nothing to detect)."
+}

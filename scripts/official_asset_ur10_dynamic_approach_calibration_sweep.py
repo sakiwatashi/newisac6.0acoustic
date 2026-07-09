@@ -57,6 +57,8 @@ from acoustic_calibration_v1 import (  # noqa: E402
 from rtx_acoustic_factory import (  # noqa: E402
     create_passport_acoustic,
     enrich_gmo_summary,
+    extract_primary_raw_amplitudes,
+    matched_filter_tof,
     summarize_gmo_frame,
 )
 from rtx_material_passport_v1 import apply_room_and_target_materials  # noqa: E402
@@ -94,8 +96,34 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--substeps-per-sample", type=int, default=GMO_SUBSTEPS)
     parser.add_argument("--step-m", type=float, default=APPROACH_STEP_M)
     parser.add_argument("--max-steps", type=int, default=40)
+    parser.add_argument("--baseline-steps", type=int, default=3)
+    parser.add_argument("--baseline-mode", action="store_true")
+    parser.add_argument("--baseline-npy", type=Path, default=None)
+    parser.add_argument("--save-baseline-npy", type=Path, default=None)
+    parser.add_argument("--mf-sample-period-us", type=float, default=132.5)
     parser.add_argument("--gui", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--az-span-deg", type=float, default=90.0,
+                        help="WPM beam azimuth span in degrees (default 90=omnidirectional; 45=CH201-like directional)")
+    parser.add_argument("--el-span-deg", type=float, default=90.0,
+                        help="WPM beam elevation span in degrees (default 90=omnidirectional; 45=CH201-like directional)")
+    parser.add_argument("--trace-tree-depth", type=int, default=2,
+                        help="WPM max ray bounces (default 2; set 1 for direct-echo only)")
+    parser.add_argument("--open-space", action="store_true",
+                        help="Remove ceiling and x_max wall (open-space mode: wrench is primary forward reflector)")
+    # WPM parametric model tuning (schema defaults: closeIndirectAmpl=17.64, closeDirectAmpl=12.66)
+    parser.add_argument("--close-indirect-ampl", type=float, default=None,
+                        help="WPM indirect echo amplitude multiplier (schema default 17.64). Set near 0 to suppress room model.")
+    parser.add_argument("--close-direct-ampl", type=float, default=None,
+                        help="WPM direct echo amplitude multiplier (schema default 12.66). Boost to emphasise target echo.")
+    parser.add_argument("--close-range", type=float, default=None,
+                        help="WPM close-range threshold in metres (schema default 1.42m).")
+    parser.add_argument("--close-range-decay", type=float, default=None,
+                        help="WPM close-range amplitude decay factor (schema default 1.26).")
+    parser.add_argument("--close-direct-ampl-base", type=float, default=None,
+                        help="WPM direct echo base amplitude (schema default 1.39).")
+    parser.add_argument("--close-indirect-ampl-base", type=float, default=None,
+                        help="WPM indirect echo base amplitude (schema default 1.12).")
     return parser.parse_args()
 
 
@@ -153,7 +181,7 @@ def main() -> None:
     sensor_mount_path = resolve_sensor_mount_path(robot_path, stage)
     sensor_path = f"{sensor_mount_path}/{SENSOR_PRIM_NAME}"
 
-    room_prim_paths = create_six_wall_room(Cube, np)
+    room_prim_paths = create_six_wall_room(Cube, np, open_space=args.open_space)
     Cube(
         WRENCH_PRIM_PATH,
         positions=np.array(spawn.position_m, dtype=float),
@@ -161,6 +189,9 @@ def main() -> None:
         colors=WRENCH_COLOR,
     )
     set_prim_visibility(stage, CAMERA_FACING_WALL_PATH, visible=False)
+    if args.baseline_mode:
+        set_prim_visibility(stage, WRENCH_PRIM_PATH, visible=False)
+        print("Baseline mode: wrench hidden from scene", flush=True)
 
     acoustic, sensor = create_passport_acoustic(
         sensor_path,
@@ -172,9 +203,18 @@ def main() -> None:
         sensor_local_offset_m=SENSOR_LOCAL_OFFSET_M,
         mount_spacing_m=SENSOR_MOUNT_SPACING_M,
         writer_brings_annotator=True,
+        az_span_deg=args.az_span_deg,
+        el_span_deg=args.el_span_deg,
+        trace_tree_depth=args.trace_tree_depth,
+        close_indirect_ampl=args.close_indirect_ampl,
+        close_direct_ampl=args.close_direct_ampl,
+        close_range=args.close_range,
+        close_range_decay=args.close_range_decay,
+        close_direct_ampl_base=args.close_direct_ampl_base,
+        close_indirect_ampl_base=args.close_indirect_ampl_base,
     )
 
-    writer_state: dict[str, Any] = {"last_fields": None, "frame": 0}
+    writer_state: dict[str, Any] = {"last_fields": None, "last_primary_amps": None, "frame": 0}
 
     class SweepGmoWriter(Writer):
         def __init__(self):
@@ -195,6 +235,7 @@ def main() -> None:
                 if int(gmo.numElements) <= 0:
                     continue
                 writer_state["last_fields"] = enrich_gmo_summary(summarize_gmo_frame(gmo, np), gmo, np)
+                writer_state["last_primary_amps"] = extract_primary_raw_amplitudes(gmo, np)
                 break
             writer_state["frame"] += 1
 
@@ -235,6 +276,7 @@ def main() -> None:
         if not timeline.is_playing():
             timeline.play()
         writer_state["last_fields"] = None
+        writer_state["last_primary_amps"] = None
         for i in range(max(1, int(args.substeps_per_sample))):
             world.step(render=(i == int(args.substeps_per_sample) - 1))
             simulation_app.update()
@@ -275,8 +317,89 @@ def main() -> None:
         raise RuntimeError(f"IK failed at search start {ee_target}")
 
     obs = observe_q(q, int(args.settle_steps))
+    baseline_amps: Any = None
+    baseline_accum: list = []
+
+    # Global baseline: load pre-recorded no-wrench waveforms
+    global_baseline_arr: Any = None
+    if args.baseline_npy is not None and not args.baseline_mode:
+        global_baseline_arr = np.load(str(args.baseline_npy))
+        print(f"Loaded global baseline: {global_baseline_arr.shape}", flush=True)
+
+    # Matched filter sample period
+    mf_sample_period_s = float(args.mf_sample_period_us) * 1e-6
+
+    # Baseline mode: accumulate waveforms for saving
+    baseline_mode_amps: list = []
+
     for step_idx in range(int(args.max_steps)):
         fields = capture_gmo()
+        current_amps = writer_state.get("last_primary_amps")
+
+        # Accumulate baseline from first N valid captures (largest oracle_distance)
+        if baseline_amps is None and current_amps is not None:
+            baseline_accum.append(np.array(current_amps, dtype=float))
+            if len(baseline_accum) >= int(args.baseline_steps):
+                baseline_amps = np.mean(np.stack(baseline_accum), axis=0)
+
+        # Compute per-trial differential waveform features (current - per-trial baseline)
+        if (
+            baseline_amps is not None
+            and current_amps is not None
+            and len(current_amps) == len(baseline_amps)
+        ):
+            diff_abs = np.abs(current_amps - baseline_amps)
+            n_smp = len(diff_abs)
+            _early_n = max(4, int(math.ceil(n_smp * 0.25)))
+            _ultra_n = max(4, int(math.ceil(n_smp * 0.10)))
+            diff_early_energy = float(np.sum(diff_abs[:_early_n]))
+            diff_ultra_early_energy = float(np.sum(diff_abs[:_ultra_n]))
+            diff_peak_sample_idx = int(np.argmax(np.abs(current_amps - baseline_amps)))
+            diff_early_peak_sample_idx = int(np.argmax(diff_abs[:_ultra_n]))
+        else:
+            diff_early_energy = math.nan
+            diff_ultra_early_energy = math.nan
+            diff_peak_sample_idx = -1
+            diff_early_peak_sample_idx = -1
+
+        # Matched filter ToF estimation
+        if current_amps is not None and len(current_amps) > 0:
+            mf_peak_idx, mf_peak_val = matched_filter_tof(
+                current_amps,
+                float(CENTER_FREQUENCY_HZ),
+                mf_sample_period_s,
+                np,
+            )
+            mf_tof_distance_m = float(mf_peak_idx) * mf_sample_period_s * 343.0 / 2.0
+        else:
+            mf_peak_idx = -1
+            mf_peak_val = math.nan
+            mf_tof_distance_m = math.nan
+
+        # Global differential (current - no-wrench baseline loaded from .npy)
+        if (
+            global_baseline_arr is not None
+            and current_amps is not None
+            and step_idx < len(global_baseline_arr)
+            and len(current_amps) == len(global_baseline_arr[step_idx])
+        ):
+            gbline = global_baseline_arr[step_idx]
+            gdiff_abs = np.abs(current_amps - gbline)
+            n_gsmp = len(gdiff_abs)
+            _ge_n = max(4, int(math.ceil(n_gsmp * 0.25)))
+            _gue_n = max(4, int(math.ceil(n_gsmp * 0.10)))
+            global_diff_early_energy = float(np.sum(gdiff_abs[:_ge_n]))
+            global_diff_ultra_early_energy = float(np.sum(gdiff_abs[:_gue_n]))
+            global_diff_early_peak_sample_idx = int(np.argmax(gdiff_abs[:_gue_n]))
+        else:
+            global_diff_early_energy = math.nan
+            global_diff_ultra_early_energy = math.nan
+            global_diff_early_peak_sample_idx = -1
+
+        # Baseline mode: collect waveforms for saving
+        if args.baseline_mode and current_amps is not None:
+            baseline_mode_amps.append(np.array(current_amps, dtype=float))
+
         obs = observe_q(obs["q"], 1)
         sensor_x = float(obs["sensor_position"][0])
         row = {
@@ -294,6 +417,15 @@ def main() -> None:
             "ref_sgw_early_energy": float(fields.get("ref_sgw_early_energy", math.nan)) if fields else math.nan,
             "rx_energy_balance": float(fields.get("rx_energy_balance", math.nan)) if fields else math.nan,
             "waveform_early_fraction": float(fields.get("waveform_early_fraction", math.nan)) if fields else math.nan,
+            "diff_early_energy": diff_early_energy,
+            "diff_ultra_early_energy": diff_ultra_early_energy,
+            "diff_peak_sample_idx": diff_peak_sample_idx,
+            "diff_early_peak_sample_idx": diff_early_peak_sample_idx,
+            "mf_tof_sample_idx": mf_peak_idx,
+            "mf_tof_distance_m": mf_tof_distance_m,
+            "global_diff_early_energy": global_diff_early_energy,
+            "global_diff_ultra_early_energy": global_diff_ultra_early_energy,
+            "global_diff_early_peak_sample_idx": global_diff_early_peak_sample_idx,
         }
         if fields:
             for key in (
@@ -303,6 +435,9 @@ def main() -> None:
                 "peak_amplitude",
                 "amplitude_std",
                 "num_signal_ways",
+                "primary_sgw_peak_sample_idx",
+                "primary_sgw_ultra_early_energy",
+                "primary_sgw_early_peak_sample_idx",
             ):
                 if key in fields:
                     row[key] = fields[key]
@@ -314,6 +449,13 @@ def main() -> None:
         if not ok_next:
             break
         obs = observe_q(q_next, int(args.settle_steps))
+
+    # Save baseline waveforms if in baseline mode
+    if args.baseline_mode and args.save_baseline_npy and baseline_mode_amps:
+        save_arr = np.stack(baseline_mode_amps)
+        args.save_baseline_npy.parent.mkdir(parents=True, exist_ok=True)
+        np.save(str(args.save_baseline_npy), save_arr)
+        print(f"Saved global baseline: {args.save_baseline_npy} shape={save_arr.shape}", flush=True)
 
     calibration_points = build_calibration_points(rows)
     tof_points = build_tof_calibration_points(rows)

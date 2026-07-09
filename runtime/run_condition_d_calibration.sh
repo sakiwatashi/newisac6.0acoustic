@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+# Condition D（近無響室）校正掃描
+# fur_hair 牆壁/地板/桌面（最高吸音）+ retroreflective aluminum 板手（最高反射）
+# 目的：排除房間反射，驗證 WPM 是否能直接偵測板手回波
+# 用法: bash runtime/run_condition_d_calibration.sh
+
+set -e
+ISAACSIM=/home/lab109/song/isaacsim6.0/app/python.sh
+SCRIPT=/home/lab109/song/isaacsim6.0/scripts/official_asset_ur10_dynamic_approach_calibration_sweep.py
+BASE_OUT=/home/lab109/song/isaacsim6.0/runtime/outputs/condition_d_calibration_v1
+SEED=20260629
+MATERIAL=D
+
+# 與先前相同的 7 個 trial，涵蓋完整距離範圍
+TRIAL_IDS=(18 20 0 4 8 12 16)
+
+mkdir -p "$BASE_OUT"
+echo "=== Condition D 近無響室校正掃描 (material=$MATERIAL) — $(date) ===" | tee "$BASE_OUT/run.log"
+echo "設定: fur_hair 牆壁/桌面 + retroreflective aluminum 板手" | tee -a "$BASE_OUT/run.log"
+
+for TID in "${TRIAL_IDS[@]}"; do
+    OUT="$BASE_OUT/trial_${TID}"
+    echo "" | tee -a "$BASE_OUT/run.log"
+    echo "--- trial_id=${TID} material=${MATERIAL} → ${OUT} ---" | tee -a "$BASE_OUT/run.log"
+    $ISAACSIM "$SCRIPT" \
+        --trial-id "$TID" \
+        --spawn-seed "$SEED" \
+        --output-dir "$OUT" \
+        --material-condition "$MATERIAL" \
+        --overwrite \
+        2>&1 | tee -a "$BASE_OUT/run.log"
+    echo "trial_id=${TID} 完成" | tee -a "$BASE_OUT/run.log"
+done
+
+echo "" | tee -a "$BASE_OUT/run.log"
+echo "=== 所有 trial 完成，合併並分析 ===" | tee -a "$BASE_OUT/run.log"
+
+python3 - <<'PYEOF'
+import csv, math, pathlib, sys
+from collections import Counter
+
+base = pathlib.Path("/home/lab109/song/isaacsim6.0/runtime/outputs/condition_d_calibration_v1")
+all_rows = []
+for csv_path in sorted(base.glob("trial_*/dynamic_approach_calibration_sweep.csv")):
+    trial_id = int(csv_path.parent.name.split("_")[1])
+    with csv_path.open(newline="") as f:
+        for row in csv.DictReader(f):
+            row["trial_id"] = trial_id
+            all_rows.append(row)
+
+if not all_rows:
+    print("ERROR: 找不到 CSV", file=sys.stderr)
+    sys.exit(1)
+
+out_path = base / "condition_d_combined.csv"
+fieldnames = list(all_rows[0].keys())
+with out_path.open("w", newline="") as f:
+    w = csv.DictWriter(f, fieldnames=fieldnames)
+    w.writeheader()
+    w.writerows(all_rows)
+print(f"合併 {len(all_rows)} 筆 → {out_path}")
+
+def sf(v):
+    try:
+        x = float(v)
+        return x if math.isfinite(x) else None
+    except: return None
+
+def pearson_r(xs, ys):
+    n = len(xs)
+    if n < 2: return float("nan")
+    mx, my = sum(xs)/n, sum(ys)/n
+    num = sum((x-mx)*(y-my) for x,y in zip(xs,ys))
+    den = math.sqrt(sum((x-mx)**2 for x in xs) * sum((y-my)**2 for y in ys))
+    return num/den if den > 0 else float("nan")
+
+print(f"\n=== Condition D 聲學特徵分析 ===")
+
+# 核心特徵相關性
+features = [
+    "primary_sgw_early_energy",
+    "primary_sgw_ultra_early_energy",
+    "primary_sgw_peak_sample_idx",
+    "primary_sgw_early_peak_sample_idx",
+    "ref_sgw_early_energy",
+    "waveform_early_fraction",
+    "amplitude_std",
+    "num_signal_ways",
+]
+for feat in features:
+    pairs = [(sf(r["oracle_distance_m"]), sf(r.get(feat)))
+             for r in all_rows
+             if sf(r.get("oracle_distance_m")) and sf(r.get(feat))
+             and str(r.get(feat,"")).strip() not in ("-1","nan","")]
+    if pairs:
+        xs, ys = zip(*pairs)
+        r = pearson_r(list(xs), list(ys))
+        print(f"  {feat:<42} r = {r:+.4f}  (n={len(pairs)})")
+
+# peak_sample_idx 分布（關鍵：back wall 是否消失？）
+print("\n=== primary_sgw_peak_sample_idx 分布（back wall 消失了嗎？）===")
+peak_vals = [int(float(r["primary_sgw_peak_sample_idx"]))
+             for r in all_rows if sf(r.get("primary_sgw_peak_sample_idx"))]
+cnt = Counter(peak_vals)
+for k, v in sorted(cnt.items(), key=lambda x: -x[1])[:15]:
+    dist_approx = k * 0.1325 * 343 / 2
+    print(f"  sample={k:3d}  count={v:3d}  (≈{dist_approx:.2f}m)")
+
+# 各 trial 能量序列（是否還相同？）
+print("\n=== 各 trial ultra_early_energy 序列（是否因板手位置而不同？）===")
+for tid in sorted(set(int(float(r["trial_id"])) for r in all_rows)):
+    tr = sorted([r for r in all_rows if int(float(r["trial_id"])) == tid],
+                key=lambda x: -float(x["oracle_distance_m"]))
+    vals = [sf(r.get("primary_sgw_ultra_early_energy")) for r in tr]
+    vals = [f"{v:.0f}" if v else "?" for v in vals[:10]]
+    d_range = [sf(r["oracle_distance_m"]) for r in tr if sf(r.get("oracle_distance_m"))]
+    print(f"  trial_{tid:2d} [{min(d_range):.2f}–{max(d_range):.2f}m]: {' '.join(vals)}")
+
+# 距離分段能量（是否單調？）
+print("\n=== ultra_early_energy vs 距離分段（是否單調遞減？）===")
+pairs_ue = sorted([(sf(r["oracle_distance_m"]), sf(r["primary_sgw_ultra_early_energy"]))
+                   for r in all_rows if sf(r.get("oracle_distance_m")) and sf(r.get("primary_sgw_ultra_early_energy"))])
+bins = [(0.20,0.30),(0.30,0.35),(0.35,0.40),(0.40,0.45),(0.45,0.50),(0.50,0.60),(0.60,0.70),(0.70,0.82)]
+for lo, hi in bins:
+    sub = [e for d,e in pairs_ue if lo<=d<hi]
+    if sub:
+        mu = sum(sub)/len(sub)
+        std = math.sqrt(sum((x-mu)**2 for x in sub)/len(sub))
+        print(f"  [{lo:.2f},{hi:.2f})  mean={mu:6.2f}  std={std:5.2f}  n={len(sub)}")
+
+PYEOF
+
+echo "" | tee -a "$BASE_OUT/run.log"
+echo "=== 完成 $(date) ===" | tee -a "$BASE_OUT/run.log"

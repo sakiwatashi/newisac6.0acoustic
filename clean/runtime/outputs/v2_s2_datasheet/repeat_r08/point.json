@@ -1,0 +1,15 @@
+{
+  "point_index": 0,
+  "nominal_distance_m": 0.5,
+  "target_x_m": 0.5,
+  "target_y_m": 0.0,
+  "target_z_m": 0.65,
+  "peak_sample_idx": 24.0,
+  "early_energy": 26.460316321097253,
+  "rx0_early": 26.460316321097253,
+  "rx1_early": 32.02793603597459,
+  "point_drift": 0.03921072839267451,
+  "stationarity_ok": true,
+  "waveform_tag": "point_00",
+  "pass_id": "r08"
+}

@@ -1,0 +1,63 @@
+{
+  "cell_id": "accept_visible",
+  "target_distance_m": 0.5,
+  "target_size_m": 0.2,
+  "sensor_pitch_deg": 0.0,
+  "clutter": "none",
+  "sensor_pos_m": [
+    0.0,
+    0.0,
+    0.65
+  ],
+  "notes": "acceptance case (V2_HANDOFF_FOR_NEXT_AI.md \u00a75.1): known-visible baseline, no clutter, horizontal, 0.2m target at 0.5m; expect snr_peak > 100.",
+  "target_created": true,
+  "target_center_m": [
+    0.5,
+    0.0,
+    0.65
+  ],
+  "table_built": false,
+  "arm_built": false,
+  "assets_root_used": null,
+  "with_target": {
+    "peak_sample_idx": 19.0,
+    "early_energy": 35226.3324351417,
+    "n_samples": 320,
+    "n_frames_averaged": 6,
+    "n_samples_per_sgw": 320.0,
+    "settle_frames": 40,
+    "converged": true
+  },
+  "noise_ref": {
+    "peak_sample_idx": 19.0,
+    "early_energy": 35217.93415072439,
+    "n_samples": 320,
+    "n_frames_averaged": 6,
+    "n_samples_per_sgw": 320.0,
+    "settle_frames": 40,
+    "converged": true
+  },
+  "without_target": {
+    "label": "without_target",
+    "peak_sample_idx": 304.0,
+    "early_energy": 22.149801766644174,
+    "n_samples": 320,
+    "n_frames_averaged": 6,
+    "n_samples_per_sgw": 320.0,
+    "settle_frames": 40,
+    "converged": true
+  },
+  "noise_floor_peak": 0.6321287900209428,
+  "noise_floor_energy": 61.30703587830067,
+  "snr_peak": 293.6813794375305,
+  "snr_energy": 4.516496616440514,
+  "energy_drift_rel": 0.00023840927615095817,
+  "stationarity_ok": true,
+  "waveform_lengths_truncated": false,
+  "n_samples_common": 320,
+  "n_measure": 6,
+  "n_settle": 40,
+  "timestamp": "2026-07-08T17:07:19.043505",
+  "script": "paired_capture_runner.py",
+  "warmup_frames": 20
+}

@@ -1,0 +1,13 @@
+{
+  "cell_id": "D_d0.5_z0.10_p60_ctablearm",
+  "target_distance_m": 0.5,
+  "target_size_m": 0.1,
+  "sensor_pitch_deg": 60,
+  "clutter": "table_arm",
+  "sensor_pos_m": [
+    0,
+    0,
+    0.65
+  ],
+  "notes": "block D"
+}

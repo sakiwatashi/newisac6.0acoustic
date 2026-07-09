@@ -1,0 +1,13 @@
+{
+  "cell_id": "A_d0.5_z0.10_p0_cnone",
+  "target_distance_m": 0.5,
+  "target_size_m": 0.1,
+  "sensor_pitch_deg": 0,
+  "clutter": "none",
+  "sensor_pos_m": [
+    0,
+    0,
+    0.65
+  ],
+  "notes": "block A"
+}

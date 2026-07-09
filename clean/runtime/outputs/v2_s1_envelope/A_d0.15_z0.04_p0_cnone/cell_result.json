@@ -1,0 +1,63 @@
+{
+  "cell_id": "A_d0.15_z0.04_p0_cnone",
+  "target_distance_m": 0.15,
+  "target_size_m": 0.04,
+  "sensor_pitch_deg": 0.0,
+  "clutter": "none",
+  "sensor_pos_m": [
+    0.0,
+    0.0,
+    0.65
+  ],
+  "notes": "block A",
+  "target_created": true,
+  "target_center_m": [
+    0.15,
+    0.0,
+    0.65
+  ],
+  "table_built": false,
+  "arm_built": false,
+  "assets_root_used": null,
+  "with_target": {
+    "peak_sample_idx": 6.0,
+    "early_energy": 564.3677191462403,
+    "n_samples": 320,
+    "n_frames_averaged": 6,
+    "n_samples_per_sgw": 320.0,
+    "settle_frames": 40,
+    "converged": true
+  },
+  "noise_ref": {
+    "peak_sample_idx": 6.0,
+    "early_energy": 556.8009444215684,
+    "n_samples": 320,
+    "n_frames_averaged": 6,
+    "n_samples_per_sgw": 320.0,
+    "settle_frames": 40,
+    "converged": true
+  },
+  "without_target": {
+    "label": "without_target",
+    "peak_sample_idx": 304.0,
+    "early_energy": 22.149801766644174,
+    "n_samples": 320,
+    "n_frames_averaged": 6,
+    "n_samples_per_sgw": 320.0,
+    "settle_frames": 40,
+    "converged": true
+  },
+  "noise_floor_peak": 0.6846912900606791,
+  "noise_floor_energy": 57.239861557881035,
+  "snr_peak": 32.5212082036372,
+  "snr_energy": 1.385611657979043,
+  "energy_drift_rel": 0.013407525746013215,
+  "stationarity_ok": true,
+  "waveform_lengths_truncated": false,
+  "n_samples_common": 320,
+  "n_measure": 6,
+  "n_settle": 40,
+  "timestamp": "2026-07-08T17:08:19.634418",
+  "script": "paired_capture_runner.py",
+  "warmup_frames": 20
+}

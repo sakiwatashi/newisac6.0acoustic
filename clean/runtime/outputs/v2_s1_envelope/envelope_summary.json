@@ -1,0 +1,110 @@
+{
+  "snr_threshold": 10.0,
+  "n_cells_total": 52,
+  "n_missing": 0,
+  "missing": [],
+  "block_summary": {
+    "A": {
+      "n_cells": 15,
+      "n_detectable": 14,
+      "detectable_cell_ids": [
+        "A_d0.15_z0.04_p0_cnone",
+        "A_d0.15_z0.10_p0_cnone",
+        "A_d0.15_z0.20_p0_cnone",
+        "A_d0.3_z0.04_p0_cnone",
+        "A_d0.3_z0.10_p0_cnone",
+        "A_d0.3_z0.20_p0_cnone",
+        "A_d0.5_z0.04_p0_cnone",
+        "A_d0.5_z0.10_p0_cnone",
+        "A_d0.5_z0.20_p0_cnone",
+        "A_d0.8_z0.04_p0_cnone",
+        "A_d0.8_z0.10_p0_cnone",
+        "A_d0.8_z0.20_p0_cnone",
+        "A_d1.2_z0.10_p0_cnone",
+        "A_d1.2_z0.20_p0_cnone"
+      ]
+    },
+    "B": {
+      "n_cells": 10,
+      "n_detectable": 6,
+      "detectable_cell_ids": [
+        "B_d0.15_z0.10_p30_cnone",
+        "B_d0.15_z0.10_p60_cnone",
+        "B_d0.3_z0.10_p30_cnone",
+        "B_d0.5_z0.10_p30_cnone",
+        "B_d0.8_z0.10_p30_cnone",
+        "B_d1.2_z0.10_p30_cnone"
+      ]
+    },
+    "C": {
+      "n_cells": 15,
+      "n_detectable": 9,
+      "detectable_cell_ids": [
+        "C_d0.15_z0.10_p0_ctable",
+        "C_d0.15_z0.10_p30_ctable",
+        "C_d0.15_z0.10_p60_ctable",
+        "C_d0.3_z0.10_p0_ctable",
+        "C_d0.3_z0.10_p30_ctable",
+        "C_d0.5_z0.10_p0_ctable",
+        "C_d0.5_z0.10_p30_ctable",
+        "C_d0.8_z0.10_p0_ctable",
+        "C_d1.2_z0.10_p0_ctable"
+      ]
+    },
+    "D": {
+      "n_cells": 12,
+      "n_detectable": 7,
+      "detectable_cell_ids": [
+        "D_d0.3_z0.10_p0_ctablearm",
+        "D_d0.3_z0.20_p0_ctablearm",
+        "D_d0.3_z0.20_p60_ctablearm",
+        "D_d0.5_z0.10_p0_ctablearm",
+        "D_d0.5_z0.20_p0_ctablearm",
+        "D_d0.8_z0.10_p0_ctablearm",
+        "D_d0.8_z0.20_p0_ctablearm"
+      ]
+    }
+  },
+  "detectable_cell_ids": [
+    "A_d0.15_z0.04_p0_cnone",
+    "A_d0.15_z0.10_p0_cnone",
+    "A_d0.15_z0.20_p0_cnone",
+    "A_d0.3_z0.04_p0_cnone",
+    "A_d0.3_z0.10_p0_cnone",
+    "A_d0.3_z0.20_p0_cnone",
+    "A_d0.5_z0.04_p0_cnone",
+    "A_d0.5_z0.10_p0_cnone",
+    "A_d0.5_z0.20_p0_cnone",
+    "A_d0.8_z0.04_p0_cnone",
+    "A_d0.8_z0.10_p0_cnone",
+    "A_d0.8_z0.20_p0_cnone",
+    "A_d1.2_z0.10_p0_cnone",
+    "A_d1.2_z0.20_p0_cnone",
+    "B_d0.15_z0.10_p30_cnone",
+    "B_d0.15_z0.10_p60_cnone",
+    "B_d0.3_z0.10_p30_cnone",
+    "B_d0.5_z0.10_p30_cnone",
+    "B_d0.8_z0.10_p30_cnone",
+    "B_d1.2_z0.10_p30_cnone",
+    "C_d0.15_z0.10_p0_ctable",
+    "C_d0.15_z0.10_p30_ctable",
+    "C_d0.15_z0.10_p60_ctable",
+    "C_d0.3_z0.10_p0_ctable",
+    "C_d0.3_z0.10_p30_ctable",
+    "C_d0.5_z0.10_p0_ctable",
+    "C_d0.5_z0.10_p30_ctable",
+    "C_d0.8_z0.10_p0_ctable",
+    "C_d1.2_z0.10_p0_ctable",
+    "D_d0.3_z0.10_p0_ctablearm",
+    "D_d0.3_z0.20_p0_ctablearm",
+    "D_d0.3_z0.20_p60_ctablearm",
+    "D_d0.5_z0.10_p0_ctablearm",
+    "D_d0.5_z0.20_p0_ctablearm",
+    "D_d0.8_z0.10_p0_ctablearm",
+    "D_d0.8_z0.20_p0_ctablearm"
+  ],
+  "adjudication": {
+    "block_D_all_fail": false,
+    "all_cells_fail": false
+  }
+}

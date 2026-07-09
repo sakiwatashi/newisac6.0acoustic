@@ -363,6 +363,44 @@ def main() -> None:
         robot_path=robot_path,
     )
 
+    # Pre-create SurfaceGripper prim AND its attachment point joint BEFORE world.reset()
+    # so the C++ plugin registers them during physics scene initialization.
+    # The attachment joint uses wrist_3_link as body0 (the actual articulation rigid body)
+    # with physics:excludeFromArticulation=true so PhysX handles it as a standalone constraint.
+    _pre_sg_path = ""
+    if str(args.final_gripper) == "surface":
+        from isaacsim.robot.surface_gripper import create_surface_gripper as _pre_csg  # noqa: E402
+        from pxr import Gf, Sdf, UsdPhysics
+        from usd.schema.isaac import robot_schema as _pre_rs
+
+        _pre_ee = resolve_ee_path(robot_path, stage)
+        _pre_mount = resolve_sensor_mount_path(robot_path, stage)  # wrist_3_link
+        _pre_sg_prim = _pre_csg(stage, _pre_ee)
+        _pre_sg_path = str(_pre_sg_prim.GetPath())
+
+        # Attachment point joint — must exist before world.reset() so physics initializes it.
+        # body0 = wrist_3_link (articulation EE link); excludeFromArticulation lets PhysX
+        # treat this as a standalone D6 constraint rather than part of the arm's solver.
+        try:
+            _joint_path = f"{_pre_sg_path}/attachment_point_0"
+            _joint = UsdPhysics.Joint.Define(stage, _joint_path)
+            _joint.CreateBody0Rel().SetTargets([_pre_mount])
+            _joint.CreateLocalPos0Attr().Set(Gf.Vec3f(0.03, 0.0, -0.06))
+            _joint.CreateLocalRot0Attr().Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
+            _joint.CreateLocalPos1Attr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
+            _joint.CreateLocalRot1Attr().Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
+            _pre_rs.ApplyAttachmentPointAPI(_joint.GetPrim())
+            _joint.GetPrim().GetAttribute(_pre_rs.Attributes.FORWARD_AXIS.name).Set(UsdPhysics.Tokens.x)
+            _joint.GetPrim().CreateAttribute(
+                "physics:excludeFromArticulation", Sdf.ValueTypeNames.Bool, True
+            ).Set(True)
+            _pre_sg_prim.GetRelationship(_pre_rs.Relations.ATTACHMENT_POINTS.name).SetTargets(
+                [Sdf.Path(_joint_path)]
+            )
+            print(f"SurfaceGripper pre-created: {_pre_sg_path} attachment body0={_pre_mount}", flush=True)
+        except Exception as _pre_exc:
+            print(f"SurfaceGripper pre-setup failed: {_pre_exc}", flush=True)
+
     world = World()
     robot = spawn_ur10e_single_manipulator(world, robot_path=robot_path, stage=stage, name="ur10e")
     world.reset()
@@ -384,7 +422,7 @@ def main() -> None:
     sensor_mount_path = resolve_sensor_mount_path(robot_path, stage)
     sensor_path = f"{sensor_mount_path}/{SENSOR_PRIM_NAME}"
 
-    room_prim_paths = create_six_wall_room(Cube, np)
+    room_prim_paths = create_six_wall_room(Cube, np, open_space=True)
     set_prim_visibility(stage, CAMERA_FACING_WALL_PATH, visible=False)
 
     acoustic, sensor = create_passport_acoustic(
@@ -547,7 +585,7 @@ def main() -> None:
 
         surface_gripper_path, surface_gripper_iface, surface_gripper_view = setup_surface_gripper(
             stage,
-            sensor_mount_path,
+            ee_path,
             GripperView=GripperView,
             create_surface_gripper=create_surface_gripper,
         )

@@ -1,0 +1,64 @@
+================================================================================
+ENERGY CALIBRATION ANALYSIS REPORT
+================================================================================
+
+Dataset: physical_ai_acoustic_steps.csv
+Total rows: 284
+Valid rows (gmo_valid=True, oracle [0.05-1.5m]): 284
+
+[DATA SUMMARY]
+Oracle distance range: 0.248 - 0.812 m
+Early energy range: 92.4 - 1721.6
+Distance bins (n>=3): 12
+
+[BINNED DATA (0.05m bins, sorted by distance)]
+  0.35m: n= 40, median= 150.0, mean= 144.4, std=  15.9
+  0.30m: n= 51, median= 148.1, mean= 135.5, std=  20.4
+  0.60m: n= 21, median= 147.8, mean= 140.7, std=  14.3
+  0.55m: n= 28, median= 144.8, mean= 134.6, std=  19.1
+  0.40m: n= 33, median= 144.3, mean= 280.3, std= 456.1
+  0.50m: n= 27, median= 143.1, mean= 138.4, std=  16.5
+  0.45m: n= 27, median= 140.7, mean= 135.9, std=  16.9
+  0.65m: n= 16, median= 126.0, mean= 227.9, std= 386.1
+  0.70m: n=  8, median= 125.1, mean= 320.2, std= 530.0
+  0.75m: n=  9, median= 118.2, mean= 115.0, std=  19.8
+  0.25m: n= 15, median= 105.3, mean= 108.7, std=   7.8
+  0.80m: n=  9, median=  94.5, mean= 109.4, std=  24.5
+
+[NEW CALIBRATION TABLE]
+DEFAULT_CALIBRATION = ((150.00057235360146, 0.35000000000000003), (148.12050876021385, 0.30000000000000004), (147.83871632814407, 0.6000000000000001), (144.840874761343, 0.55), (144.31870412826538, 0.4), (143.05532231926918, 0.5), (140.6947405040264, 0.45), (126.01675328612328, 0.65), (125.0692343711853, 0.7000000000000001), (118.20301419496536, 0.75), (105.34704223275185, 0.25), (94.49359142780304, 0.8))
+
+[PERFORMANCE COMPARISON]
+Existing calibration (from grasp_passport_v1.py):
+  mean  : 0.2363 m
+  median: 0.2303 m
+  max   : 0.5922 m
+  std   : 0.1472 m
+
+New calibration (data-derived):
+  mean  : 0.1324 m
+  median: 0.0993 m
+  max   : 0.5205 m
+  std   : 0.1214 m
+
+[IMPROVEMENT]
+Mean error:   +43.9%
+Median error: +56.9%
+Max error:    +12.1%
+
+[EDGE CASE: oracle ~0.43m (problem statement)]
+Samples found: 38
+Early energy range: 100.3 - 1721.6
+Early energy median: 144.3
+
+For early_energy=130.0:
+  Old calibration: 0.275m (error from 0.43m: 0.155m)
+  New calibration: 0.596m (error from 0.43m: 0.166m)
+
+================================================================================
+RECOMMENDATION
+================================================================================
+
+Update grasp_passport_v1.py line 139-148 with:
+
+DEFAULT_CALIBRATION: tuple[tuple[float, float], ...] = ((150.00057235360146, 0.35000000000000003), (148.12050876021385, 0.30000000000000004), (147.83871632814407, 0.6000000000000001), (144.840874761343, 0.55), (144.31870412826538, 0.4), (143.05532231926918, 0.5), (140.6947405040264, 0.45), (126.01675328612328, 0.65), (125.0692343711853, 0.7000000000000001), (118.20301419496536, 0.75), (105.34704223275185, 0.25), (94.49359142780304, 0.8))

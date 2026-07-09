@@ -1,0 +1,72 @@
+{
+  "scan_dir": "runtime/outputs/v2_d1_approach",
+  "probe": {
+    "n_total": 13,
+    "n_kept": 6,
+    "slope_sample_per_m": 52.40163213928093,
+    "intercept_samples": -0.38283034737972343,
+    "pearson_r": 0.9958228989779315
+  },
+  "arms": {
+    "closed": {
+      "mode": "closed",
+      "n_episodes": 30,
+      "standoff_m": 0.35,
+      "stop_sensor_x_mean": 0.39499999999999996,
+      "stop_sensor_x_std": 0.1647097761058146,
+      "r_stop_target": 0.997019625083515,
+      "stop_error_mean": 0.021147740750960427,
+      "stop_error_rmse": 0.024562999789072733,
+      "p_error_le_0.10": 1.0,
+      "n_steps_mean": 8.9,
+      "reason_counts": {
+        "standoff_est": 30
+      }
+    },
+    "blind": {
+      "mode": "blind",
+      "n_episodes": 30,
+      "standoff_m": 0.35,
+      "stop_sensor_x_mean": 1.15,
+      "stop_sensor_x_std": 4.516810283266961e-16,
+      "r_stop_target": -5.391775947668384e-16,
+      "stop_error_mean": 0.7761477407509608,
+      "stop_error_rmse": 0.7927306498266864,
+      "p_error_le_0.10": 0.0,
+      "n_steps_mean": 24.0,
+      "reason_counts": {
+        "corridor_end": 30
+      }
+    },
+    "open": {
+      "mode": "open",
+      "n_episodes": 30,
+      "standoff_m": 0.35,
+      "stop_sensor_x_mean": 0.42500000000000016,
+      "stop_sensor_x_std": 1.1292025708167404e-16,
+      "r_stop_target": 5.391775947668384e-16,
+      "stop_error_mean": 0.13405895270919302,
+      "stop_error_rmse": 0.16921187631412624,
+      "p_error_le_0.10": 0.4666666666666667,
+      "n_steps_mean": 1.0,
+      "reason_counts": {
+        "open_fixed": 30
+      }
+    }
+  },
+  "welch_t_test_closed_vs_blind": {
+    "t": -25.131698367640503,
+    "p_approx": 0.0
+  },
+  "adjudication": {
+    "d0_sensor_motion_valid": true,
+    "d1_tracking_r_ge_0.9": true,
+    "d1_beats_blind": true
+  },
+  "thresholds": {
+    "d0_r": 0.99,
+    "d1_tracking_r": 0.9,
+    "d1_beats_blind_p": 0.05,
+    "error_ok_threshold_m": 0.1
+  }
+}

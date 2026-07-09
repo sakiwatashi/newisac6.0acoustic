@@ -14,7 +14,7 @@ from typing import Any
 
 PASSPORT_VERSION = "v1.0"
 
-# Condition IDs: A=low, B=medium (default), C=high absorption (PyRoom-aligned labels).
+# Condition IDs: A=low, B=medium (default), C=high absorption, D=near-anechoic.
 MATERIAL_CONDITIONS: dict[str, dict[str, Any]] = {
     "A": {
         "label": "low_absorption",
@@ -36,6 +36,18 @@ MATERIAL_CONDITIONS: dict[str, dict[str, Any]] = {
         "room": {"bases": "fabric", "coatings": "none", "attributes": "none"},
         "target": {"bases": "plastic", "coatings": "paint", "attributes": "none"},
         "method_note": "Soft/absorptive room proxy; PRA reference absorption=0.70.",
+    },
+    "D": {
+        "label": "near_anechoic",
+        "pra_absorption_value": 0.95,
+        "room": {"bases": "fur_hair", "coatings": "none", "attributes": "none"},
+        "target": {"bases": "aluminum", "coatings": "clearcoat", "attributes": "retroreflective"},
+        "method_note": (
+            "Near-anechoic: fur_hair on all room/table surfaces eliminates room reflections. "
+            "Retroreflective aluminium wrench maximises target echo. "
+            "Goal: isolate wrench signal from floor/wall/ceiling contamination. "
+            "PRA reference absorption≈0.95 (RTX fur_hair preset; value is estimated)."
+        ),
     },
 }
 
