@@ -1,0 +1,13 @@
+{
+ "slope_smp_per_m": 58.124231086544896,
+ "intercept_smp": -3.905722723617398,
+ "t_cal_us": 100.31795141350699,
+ "n_kept": 19,
+ "r": 0.9955580275068419,
+ "rmse_m": 0.017761276227341583,
+ "fit_range_m": [
+  0.39983456539578754,
+  1.1000026994240706
+ ],
+ "source": "POOLED kept points: g2(4)+m3b_target(7)+m3b_sensor(8), justified by m3b_mover_effect_null PASS; adjudicated 2026-07-10"
+}

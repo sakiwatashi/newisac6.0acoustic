@@ -1,0 +1,62 @@
+{
+  "mode": "g3",
+  "smoke": false,
+  "seed": null,
+  "n_episodes": null,
+  "acoustic_only": false,
+  "debug_scaffold": true,
+  "standoff_m": 0.35,
+  "step_m": 0.05,
+  "max_steps": 40,
+  "sensor_offset_m": 0.25,
+  "n_settle": 40,
+  "n_measure": 12,
+  "corridor": {
+    "sensor_x_start_m": 0.6,
+    "guard_x_m": 0.95,
+    "target_x_min_m": 1.0,
+    "target_x_max_m": 1.2,
+    "bar_x_nominal_m": 1.1
+  },
+  "bar": {
+    "scale_m": [
+      0.06,
+      0.06,
+      0.12
+    ],
+    "z_m": 0.46,
+    "mass_kg": 0.15
+  },
+  "grasp_geometry": {
+    "finger_reach_x_m": 0.162,
+    "grasp_tool0_to_bar_m": 0.14200000000000002,
+    "pad_half_len_m": 0.02,
+    "advance_step_m": 0.02,
+    "lift_height_m": 0.1,
+    "hold_frames": 60,
+    "success_z_gain_m": 0.05
+  },
+  "tol_align_x_m_placeholder": 0.02,
+  "calibration": {
+    "path": "/home/lab109/song/isaacsim6.0/runtime/outputs/v2_d3_gates/bar_calibration.json",
+    "slope_smp_per_m": 58.124231086544896,
+    "intercept_smp": -3.905722723617398,
+    "t_cal_us": 100.31795141350699,
+    "n_kept": 19,
+    "r": 0.9955580275068419,
+    "rmse_m": 0.017761276227341583,
+    "fit_range_m": [
+      0.39983456539578754,
+      1.1000026994240706
+    ],
+    "source": "POOLED kept points: g2(4)+m3b_target(7)+m3b_sensor(8), justified by m3b_mover_effect_null PASS; adjudicated 2026-07-10"
+  },
+  "gripper_variant_selected": "Robotiq_2f_85",
+  "no_floor_prim": true,
+  "assets_root_used": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0",
+  "usd_path_used": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd",
+  "warmup_frames": 20,
+  "n_drift_flagged": 0,
+  "timestamp": "2026-07-10T10:04:31.109142",
+  "script": "d3_grasp_runner.py"
+}

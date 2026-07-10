@@ -1,0 +1,57 @@
+{
+  "mode": "g1",
+  "smoke": false,
+  "acoustic_only": true,
+  "debug_scaffold": false,
+  "distances_nominal_3d_m": [
+    0.5,
+    0.8,
+    1.1
+  ],
+  "n_settle": 40,
+  "n_measure": 12,
+  "sensor_offset_m": 0.25,
+  "arm_path": "/World/ur10e",
+  "mount_path_used": "/World/ur10e/wrist_3_link",
+  "sensor_path": "/World/ur10e/wrist_3_link/acoustic_sensor",
+  "gripper_variant_selected": "Robotiq_2f_85",
+  "tool_z_m": 0.65,
+  "bar_scale_m": [
+    0.06,
+    0.06,
+    0.12
+  ],
+  "bar_z_m": 0.46,
+  "height_diff_m": 0.19,
+  "table_top_z_m": 0.4,
+  "table_center_x_m": 1.05,
+  "table_width_m": 1.2,
+  "table_depth_m": 0.8,
+  "sensor_x_start_m": 0.6,
+  "bar_fixed_x_m3b_sensor_m": null,
+  "posture_link_names": [
+    "forearm_link",
+    "wrist_1_link",
+    "wrist_2_link",
+    "wrist_3_link"
+  ],
+  "floor_margin_z_m": 0.05,
+  "table_clear_margin_m": 0.05,
+  "sensor_z_tol_m": 0.02,
+  "sensor_angle_tol_deg": 5.0,
+  "ik_robot_description": "/home/lab109/song/isaacsim6.0/app/extsDeprecated/isaacsim.robot_motion.motion_generation/motion_policy_configs/universal_robots/ur10e/rmpflow/ur10e_robot_description.yaml",
+  "ik_urdf": "/home/lab109/song/isaacsim6.0/app/extsDeprecated/isaacsim.robot_motion.motion_generation/motion_policy_configs/universal_robots/ur10e/ur10e.urdf",
+  "ik_orientation_tolerance_rad": 0.08,
+  "ik_position_tolerance_m": 0.03,
+  "assets_root_used": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0",
+  "usd_path_used": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd",
+  "warmup_frames": 20,
+  "n_drift_flagged": 6,
+  "criteria_text": {
+    "g1_object_detectable": "paired_capture-style SNR_peak > 10 for ALL 3 distance cells (d={0.5,0.8,1.1} m), bar in real task geometry (table + arm + REAL Robotiq gripper + horizontal sensor). Adjudicated offline (plan.md \u6b65 2).",
+    "g2_object_ranging": "r(peak_sample_idx, true_distance_3d_m) >= 0.95 over stationarity_ok points, bar swept 10 points 0.40-1.10 m (equidistant), sensor fixed at D1.5 corridor start pose. Adjudicated offline (plan.md \u6b65 2).",
+    "m3b_mover_effect_null": "|slope_target - slope_sensor| <= 2 x pooled_SE (m3b_target: bar swept, sensor fixed; m3b_sensor: bar fixed x=1.30, arm-carried sensor swept; same nominal 13-point 0.40-0.85 m 3D distance set). Adjudicated offline (plan.md \u6b65 2)."
+  },
+  "timestamp": "2026-07-10T01:14:03.293389",
+  "script": "d3_gates_runner.py"
+}

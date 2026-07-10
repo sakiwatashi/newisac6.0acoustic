@@ -1,0 +1,53 @@
+{
+ "g1_object_detectable": true,
+ "g2_object_ranging": true,
+ "g2": {
+  "n_kept": 4,
+  "n_total": 10,
+  "r": 0.9961955279728621,
+  "slope": 56.305446897705494,
+  "intercept": -2.694762873130749,
+  "se": 3.4828884169337937
+ },
+ "m3b_mover_effect_null": true,
+ "m3b": {
+  "slope_target": 61.51157374765962,
+  "se_target": 0.7349384452299681,
+  "n_target": 7,
+  "slope_sensor": 57.83294222869336,
+  "se_sensor": 3.047409654481687,
+  "n_sensor": 8,
+  "diff": 3.678631518966256,
+  "two_pooled_se": 6.2695582365921885
+ },
+ "calibration_decision": {
+  "chosen": "pooled g2+m3b_target+m3b_sensor kept points (n=19, slope=58.12\u00b11.33, r=0.9956, rmse=1.78cm)",
+  "rationale": "g2-only kept n=4 (SE \u00b13.48, mid-band drift audit dropped 6/10); pooling justified by m3b_mover_effect_null PASS (all three sweeps measure the same line); instrumentation choice, not a criterion change",
+  "g2_only_fit_kept_for_reference": {
+   "n_kept": 4,
+   "n_total": 10,
+   "r": 0.9961955279728621,
+   "slope": 56.305446897705494,
+   "intercept": -2.694762873130749,
+   "se": 3.4828884169337937
+  }
+ },
+ "g1_physics_sanity": {
+  "with_peak_idx": [
+   25,
+   43,
+   60
+  ],
+  "predicted_by_ranging_line": [
+   25.5,
+   42.4,
+   59.3
+  ],
+  "without_peak_idx": [
+   19,
+   19,
+   20
+  ],
+  "note": "SNR rising with distance (31.9->82.3) is a denominator (session-noise) effect; detection itself physical -- with_peak tracks the ranging line, without_peak flat at background"
+ }
+}

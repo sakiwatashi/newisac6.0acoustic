@@ -1,0 +1,61 @@
+{
+ "tol_align_x_m": 0.02,
+ "arms": {
+  "closed": {
+   "n": 30,
+   "n_attempted": 30,
+   "n_aligned": 18,
+   "n_lift": 23,
+   "n_lift_given_aligned": 15,
+   "align_rate": 0.6,
+   "lift_given_align": 0.8333333333333334,
+   "r_grasp_target": 0.9884706231799494,
+   "align_abs_rmse_m": 0.01910933535718177,
+   "n_invalid": 3,
+   "reasons": {
+    "standoff_est": 30
+   }
+  },
+  "blind": {
+   "n": 30,
+   "n_attempted": 30,
+   "n_aligned": 7,
+   "n_lift": 4,
+   "n_lift_given_aligned": 4,
+   "align_rate": 0.23333333333333334,
+   "lift_given_align": 0.5714285714285714,
+   "r_grasp_target": NaN,
+   "align_abs_rmse_m": 0.05412081881966258,
+   "n_invalid": 0,
+   "reasons": {
+    "corridor_end": 30
+   }
+  },
+  "open": {
+   "n": 30,
+   "n_attempted": 30,
+   "n_aligned": 7,
+   "n_lift": 6,
+   "n_lift_given_aligned": 5,
+   "align_rate": 0.23333333333333334,
+   "lift_given_align": 0.7142857142857143,
+   "r_grasp_target": NaN,
+   "align_abs_rmse_m": 0.05328741170313201,
+   "n_invalid": 0,
+   "reasons": {
+    "open_fixed": 30
+   }
+  }
+ },
+ "g3": {
+  "n_trials": 10,
+  "n_lift_success": 3,
+  "debug_scaffold": true
+ },
+ "fisher_p_one_sided": 0.004107016902670212,
+ "adjudication": {
+  "d3_align_tracking": true,
+  "d3_align_beats_blind": true,
+  "d3_posture_clean": false
+ }
+}
