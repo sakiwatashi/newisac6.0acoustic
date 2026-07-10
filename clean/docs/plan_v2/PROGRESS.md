@@ -125,4 +125,14 @@
 - **D3 三臂完成**:closed **r(夾取中心,目標)=0.9885、對位率 60%(±2cm)vs blind 23%(Fisher p=0.004)、P(升舉|對位)=83%**;d3_posture_clean 如實判 False(3/90 遠端升舉 IK 失敗,approach 稽核 0/130 乾淨,機制=可達性包絡)。報告:`D3_grasp_report.md`。
 - **方法學決策**(均於正式執行前,`d3/decisions.md`):D-12 g3 閘門修訂(升舉降為記錄項——夾持力學被證為物體寬度×模擬器保真度,與對位無關);D-13 weld-on-stall 模擬夾持(用戶授權;觸發=物理接觸訊號,消融區辨力保留);D-9 容差由 g3 實測捕捉窗鎖 0.02 m。
 - **24 輪 g3 除錯學費**已濃縮進 `d3/notes.md`(tool0/ee_link 靜態框架、夾爪朝下、運動學/物理雙層、close 終端間隙 ≈5cm 等)——接手 AI 必讀。
-- 下一步候選:走廊 1.18 重跑消 IK 失敗(可選)/ P1、P2 / 論文 CH5-CH6 更新。**大量新產物未 commit。**
+- 下一步候選:走廊 1.18 重跑消 IK 失敗(可選)/ P1、P2 / 論文 CH5-CH6 更新。(已 commit:05fc760、487d2fb)
+
+## 2026-07-10 — 側向感知雙重蓋棺 + D2v2 設計(多點定位復活案)
+
+- **TDOA 證偽(零 GPU,S2 側向原始波形離線分析)**:rx0/rx1 互相關時差恆 ~2.8 樣本(管線偏移),對 y 偏移 r=0.002、鏡像對稱——引擎不分開渲染兩接收器。至此雙耳線索**能量(S2)+時間(本日)雙重證偽**,S2 的側向負結果補完整。
+- **頻率不變性確認**:7/6 armfree 頻掃 20–100 kHz 六頻段輸出逐位相同——WPM 不建模頻率物理;40 kHz 之外的頻段研究在模擬內無意義(論文 limitation 一句話素材,免答辯債)。
+- **D2v2 設計完成**(`D2V2_DESIGN_2026-07-10.md`,用戶已拍板):運動合成孔徑多點定位——5 視點(基線 0.3 m)最小平方圓交會解 (x̂,ŷ),只用已驗證積木(1D 測距+手臂平移)。誤差預算邊際(量化地板 1.77 cm/樣本 + 觀測擺動),g2 探針一發裁定,兩種結局皆有預寫的論文寫法。判準:r(ŷ,y)≥0.9 / r(x̂,x)≥0.95 / 2D 停止贏 blind / 姿態全淨。
+- **文獻地基檢索完成**(`D2V2_LITERATURE_GROUNDING.md`):多點定位/合成孔徑/聲納陣列/消融方法學皆有譜系(eRTIS、HiRIS、SAS、機械臂載感測器 SAR 等 12 篇);「超聲閉環夾取」檢索顯著稀疏=論文 gap statement 素材。
+- **rxGroup 閘門執行並證偽(第四重蓋棺)**:雙組配置(g001:[0]/g002:[1])下 way0 與單組逐位相同、way1 變為未定義噪音(peak 亂跳)——引擎不支援分組渲染。`rxgroup_lateral_encodable: False`(ρ=0.41/r=0.05 << 0.9;單組對照 sanity 過)。數據:`runtime/outputs/rxgroup_probe_v1/`;探針:`scripts/rxgroup_probe.py`。**側向原生路線全滅(能量/時間/id/rxGroup),D2v2 為唯一活路** → 接續 g2 trilat 探針。
+- **D2v2 g2 探針雙判準 PASS ✅(2D 能力實證)**:13 目標網格 × 5 視點(基線 0.3 m)多點定位——`g2_loc_x_valid: True`(r=0.9878,RMSE 1.5 cm)、`g2_loc_y_valid: True`(r=0.9600,RMSE 3.4 cm,落在設計預算可過區)。探針:`scripts/d2v2_trilat_probe.py`;數據:`runtime/outputs/v2_d2v2_probe/`(含 adjudication.json)。**被 S2 剪除的 D2 經演算法路線復活**。
+- 下一步:D2 正式三臂(runner 實作 + ~2h GPU,規格=D2V2_DESIGN §3)/ 論文更新 / 教授對齊。新產物未 commit。

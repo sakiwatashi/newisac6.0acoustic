@@ -1,0 +1,32 @@
+{
+ "mode": "dual",
+ "smoke": false,
+ "base_distance_m": 0.8,
+ "y_offsets_m": [
+  -0.15,
+  -0.125,
+  -0.09999999999999999,
+  -0.07499999999999998,
+  -0.04999999999999999,
+  -0.024999999999999994,
+  2.7755575615628914e-17,
+  0.025000000000000022,
+  0.05000000000000002,
+  0.07500000000000001,
+  0.1,
+  0.12500000000000003,
+  0.15000000000000005
+ ],
+ "sensor_pos_m": [
+  0.0,
+  0.0,
+  0.65
+ ],
+ "target_size_m": 0.1,
+ "mount_spacing_m": 0.1,
+ "n_settle": 40,
+ "n_measure": 12,
+ "criterion_text": "rxgroup_lateral_encodable: dual mode |Spearman rho(balance,y)|>=0.9 OR |Pearson r(lag,y)|>=0.9; single mode must remain non-encodable. Adjudicated OFFLINE by the main agent.",
+ "timestamp": "2026-07-10T22:09:49.613585",
+ "script": "rxgroup_probe.py"
+}

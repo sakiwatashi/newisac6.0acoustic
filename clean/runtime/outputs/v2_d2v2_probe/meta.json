@@ -1,0 +1,91 @@
+{
+ "smoke": false,
+ "target_grid": [
+  [
+   1.0,
+   -0.075
+  ],
+  [
+   1.0,
+   0.0
+  ],
+  [
+   1.0,
+   0.075
+  ],
+  [
+   1.0,
+   0.15
+  ],
+  [
+   1.1,
+   -0.15
+  ],
+  [
+   1.1,
+   -0.075
+  ],
+  [
+   1.1,
+   0.0
+  ],
+  [
+   1.1,
+   0.075
+  ],
+  [
+   1.1,
+   0.15
+  ],
+  [
+   1.2,
+   -0.15
+  ],
+  [
+   1.2,
+   -0.075
+  ],
+  [
+   1.2,
+   0.0
+  ],
+  [
+   1.2,
+   0.075
+  ]
+ ],
+ "vantage_y_m": [
+  -0.15,
+  -0.075,
+  0.0,
+  0.075,
+  0.15
+ ],
+ "sensor_x_vantage_m": 0.6,
+ "bar_scale_m": [
+  0.06,
+  0.06,
+  0.12
+ ],
+ "bar_z_m": 0.46,
+ "calibration": {
+  "slope_smp_per_m": 58.124231086544896,
+  "intercept_smp": -3.905722723617398,
+  "t_cal_us": 100.31795141350699,
+  "n_kept": 19,
+  "r": 0.9955580275068419,
+  "rmse_m": 0.017761276227341583,
+  "fit_range_m": [
+   0.39983456539578754,
+   1.1000026994240706
+  ],
+  "source": "POOLED kept points: g2(4)+m3b_target(7)+m3b_sensor(8), justified by m3b_mover_effect_null PASS; adjudicated 2026-07-10"
+ },
+ "gripper_variant": "Robotiq_2f_85",
+ "criteria_text": {
+  "g2_loc_y_valid": "Pearson r(y_hat, y_true) >= 0.9 (adjudicated offline)",
+  "g2_loc_x_valid": "Pearson r(x_hat, x_true) >= 0.95 (adjudicated offline)"
+ },
+ "timestamp": "2026-07-10T22:21:05.254606",
+ "script": "d2v2_trilat_probe.py"
+}
