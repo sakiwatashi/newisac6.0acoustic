@@ -227,7 +227,18 @@ SENSOR_X_START_M = 0.60
 # accordingly; all pre-registered criteria unchanged.
 CORRIDOR_GUARD_X_M = 0.95
 TARGET_X_MIN_M = 1.00
-TARGET_X_MAX_M = 1.20
+TARGET_X_MAX_M = 1.15   # rev26 (was 1.18/1.20) (2026-07-12): was 1.20. The formal run's only
+                        # criterion failure was 3/90 far-edge episodes at
+                        # x~1.19 where the LIFT (not the approach, not the
+                        # audits) hit the arm's reach limit -- exactly the
+                        # correction direction pre-registered in
+                        # docs/plan_v2/reports/D3_grasp_report.md ("走廊上限
+                        # 縮至 1.18"). rev26: 1.18 still left 1/90 (grasp
+                        # target = ESTIMATE, up to ~2 cm beyond the true
+                        # target, so the lift-dead zone at ~1.17+ was still
+                        # reachable); 1.15 + 2 cm estimate error stays clear.
+                        # Each re-run goes to a NEW directory; all prior runs
+                        # are preserved untouched.
 BAR_X_NOMINAL_M = (TARGET_X_MIN_M + TARGET_X_MAX_M) / 2.0   # 1.15: blind/open nominal
 
 PAD_HALF_LEN_M = 0.02          # documented estimate; g3 measures the real window
