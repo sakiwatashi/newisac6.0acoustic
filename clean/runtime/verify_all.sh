@@ -5,24 +5,33 @@
 # 用法:bash runtime/verify_all.sh
 # ═══════════════════════════════════════════════════════════════════════════
 set -u
-ROOT=/home/lab109/song/isaacsim6.0
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # 可攜:相對本腳本定位
 cd "$ROOT"
-PASS=0; FAIL=0
+NFAIL=0
 line(){ printf '─%.0s' {1..72}; echo; }
+run_adj(){  # run_adj <描述> <預期False數> <指令...>(如 S1 之止損判準 False=通過)
+  local out; out=$("${@:3}" 2>/dev/null) || { echo "  ✗ 執行失敗:$1"; NFAIL=$((NFAIL+1)); return; }
+  echo "$out"
+  local nf; nf=$(echo "$out" | grep -c "ADJUDICATION.*False" || true)
+  if [ "$nf" -ne "$2" ]; then
+    echo "  ✗ $1:非預期之 False 數($nf,預期 $2)"; NFAIL=$((NFAIL+1))
+  fi
+}
 
 echo "════════ V2 全實驗鏈一鍵驗證 $(date -Is) ════════"
 
 line; echo "▌S1 感測包絡(52 格配對移除)"
-python3 scripts/analyze_envelope.py --scan-dir runtime/outputs/v2_s1_envelope 2>/dev/null | grep -E "^ADJUDICATION"
+run_adj S1 2 bash -c 'python3 scripts/analyze_envelope.py --scan-dir runtime/outputs/v2_s1_envelope | grep -E "^ADJUDICATION"' 
 
 line; echo "▌S2 感測器特性表(距離/側向/重複性)"
-python3 scripts/analyze_s2_datasheet.py --scan-dir runtime/outputs/v2_s2_datasheet 2>/dev/null | grep -E "^ADJUDICATION|^INFO"
+python3 scripts/analyze_s2_datasheet.py --scan-dir runtime/outputs/v2_s2_datasheet 2>/dev/null | grep -E "^ADJUDICATION|^INFO" || { echo "  ✗ S2 失敗"; NFAIL=$((NFAIL+1)); }
+# (S2 lateral False = 預先寫定之證偽結論,不計失敗)
 
 line; echo "▌D1 三臂閉環接近(飛行感測器)"
-python3 scripts/analyze_d1_approach.py --scan-dir runtime/outputs/v2_d1_approach 2>/dev/null | grep -E "^ADJUDICATION"
+run_adj D1 0 bash -c 'python3 scripts/analyze_d1_approach.py --scan-dir runtime/outputs/v2_d1_approach | grep -E "^ADJUDICATION"' 
 
 line; echo "▌D1.5 三臂閉環接近(手臂載具,主結果)"
-python3 scripts/analyze_d15_arm_approach.py --scan-dir runtime/outputs/v2_d15_arm_approach 2>/dev/null | grep -E "^ADJUDICATION"
+run_adj D1.5 0 bash -c 'python3 scripts/analyze_d15_arm_approach.py --scan-dir runtime/outputs/v2_d15_arm_approach | grep -E "^ADJUDICATION"' 
 
 line; echo "▌D3.0 前置閘門(bar 可偵測/測距/mover 效應)"
 python3 - <<'EOF'
@@ -33,13 +42,14 @@ for k in ('g1_object_detectable','g2_object_ranging','m3b_mover_effect_null'):
 EOF
 
 line; echo "▌D3 端到端夾取三臂"
-python3 scripts/analyze_d3_grasp.py --scan-dir runtime/outputs/v2_d3_grasp 2>/dev/null | grep -E "^ADJUDICATION|^INFO"
+python3 scripts/analyze_d3_grasp.py --scan-dir runtime/outputs/v2_d3_grasp 2>/dev/null | grep -E "^ADJUDICATION|^INFO" || { echo "  ✗ D3 失敗"; NFAIL=$((NFAIL+1)); }
+echo "(首輪 posture_clean=False 為如實記錄之邊界失效,已由下方複驗修正——不計失敗)"
 
 line; echo "▌D3 邊界修正複驗(走廊 1.15,四判準全綠)"
-python3 scripts/analyze_d3_grasp.py --scan-dir runtime/outputs/v2_d3_grasp_r3 2>/dev/null | grep -E "^ADJUDICATION|^INFO"
+run_adj D3複驗 0 bash -c 'python3 scripts/analyze_d3_grasp.py --scan-dir runtime/outputs/v2_d3_grasp_r3 | grep -E "^ADJUDICATION|^INFO"' 
 
 line; echo "▌D2 二維多點定位三臂"
-python3 scripts/analyze_d2v2.py --scan-dir runtime/outputs/v2_d2v2_formal 2>/dev/null | grep -E "^ADJUDICATION"
+run_adj D2 0 bash -c 'python3 scripts/analyze_d2v2.py --scan-dir runtime/outputs/v2_d2v2_formal | grep -E "^ADJUDICATION"' 
 
 line; echo "▌側向四重證偽 + 頻率不變性(負結果重算)"
 python3 - <<'EOF'
@@ -72,15 +82,19 @@ print(f"TDOA 時間差 Pearson r = {r:.3f}(恆定管線偏移 → 證偽 ✓)")
 d=list(csv.DictReader(open('runtime/outputs/rxgroup_probe_v1/dual/points.csv')))
 pk=[float(r['way1_peak_idx']) for r in d]
 print(f"rxGroup 分組後第二路峰值範圍 {min(pk):.0f}–{max(pk):.0f}(未定義噪音 → 證偽 ✓)")
-# 頻率不變性(峰值序列逐位比對 + 能量相對差)
-pk_sets=set(); emax=0.0
-for f in sorted(glob.glob('runtime/outputs/armfree_freq_sweep/freq_*hz/armfree_proximity_sweep.csv')):
-    rs=list(csv.DictReader(open(f)))
-    pk_sets.add(tuple(r['peak_sample_idx'] for r in rs))
-    e=[float(r['early_energy']) for r in rs]
-    if 'eref' not in dir(): eref=e
-    emax=max(emax, max(abs(a-b)/max(abs(b),1e-12) for a,b in zip(e,eref)))
-print(f"頻率掃描 20–100 kHz:峰值序列種類={len(pk_sets)}(1=逐位相同 ✓)、能量最大相對差={emax:.1e}(浮點尾數級 ✓)")
+# 頻率不變性(峰值序列逐位比對 + 能量相對差;數據不在時明示略過)
+import os
+if not glob.glob('runtime/outputs/armfree_freq_sweep/freq_*hz/armfree_proximity_sweep.csv'):
+    print("頻率掃描:數據未含於本快照——略過(完整數據於原始工作目錄)")
+else:
+    pk_sets=set(); emax=0.0
+    for f in sorted(glob.glob('runtime/outputs/armfree_freq_sweep/freq_*hz/armfree_proximity_sweep.csv')):
+        rs=list(csv.DictReader(open(f)))
+        pk_sets.add(tuple(r['peak_sample_idx'] for r in rs))
+        e=[float(r['early_energy']) for r in rs]
+        if 'eref' not in dir(): eref=e
+        emax=max(emax, max(abs(a-b)/max(abs(b),1e-12) for a,b in zip(e,eref)))
+    print(f"頻率掃描 20–100 kHz:峰值序列種類={len(pk_sets)}(1=逐位相同 ✓)、能量最大相對差={emax:.1e}(浮點尾數級 ✓)")
 EOF
 
 line; echo "▌姿態稽核總帳(『姿勢不對』的直接答案:全部實驗每一步的稽核統計)"
@@ -98,11 +112,17 @@ print(f"  感測器位姿違規(歪頭/沉降) = {viol_s}")
 EOF
 
 line; echo "▌單元測試"
-ok=1
 for t in scripts/test_acoustic_calibration_v1.py scripts/test_acoustic_features.py scripts/test_grasp_passport_reach.py scripts/test_ultrasonic_closed_loop_controller.py; do
-  python3 "$t" >/dev/null 2>&1 && echo "  $(basename $t) OK" || { echo "  $(basename $t) FAILED"; ok=0; }
+  if [ -f "$t" ]; then
+    python3 "$t" >/dev/null 2>&1 && echo "  $(basename $t) OK" || { echo "  $(basename $t) FAILED"; NFAIL=$((NFAIL+1)); }
+  else
+    echo "  $(basename $t):未含於本快照(屬完整工作目錄之舊管線測試)——略過"
+  fi
 done
-python3 scripts/analyze_d3_grasp.py --self-test >/dev/null 2>&1 && echo "  analyze_d3_grasp --self-test OK" || echo "  analyze_d3_grasp self-test FAILED"
+python3 scripts/analyze_d3_grasp.py --self-test >/dev/null 2>&1 && echo "  analyze_d3_grasp --self-test OK" || { echo "  analyze_d3_grasp self-test FAILED"; NFAIL=$((NFAIL+1)); }
 
 line
-echo "════════ 驗證完畢。以上每一行 ADJUDICATION 均為當場重算。════════"
+if [ "$NFAIL" -gt 0 ]; then
+  echo "════════ 驗證結束:$NFAIL 項未通過 ✗ ════════"; exit 1
+fi
+echo "════════ 驗證通過:全部裁定為當場重算,無未預期之 False。════════"

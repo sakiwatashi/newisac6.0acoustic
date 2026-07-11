@@ -31,6 +31,7 @@
  "rmse_y_m": 0.033379219478276774,
  "welch_t": -12.100292948208958,
  "welch_p_one_sided": 5.261748114507844e-34,
+ "paired_permutation_p_one_sided": 9.99990000099999e-06,
  "adjudication": {
   "d2_loc_y_tracking": true,
   "d2_loc_x_tracking": true,

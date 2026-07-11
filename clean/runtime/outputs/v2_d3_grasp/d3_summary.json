@@ -53,6 +53,7 @@
   "debug_scaffold": true
  },
  "fisher_p_one_sided": 0.004107016902670212,
+ "mcnemar_exact_p_one_sided": 0.0063629150390625,
  "adjudication": {
   "d3_align_tracking": true,
   "d3_align_beats_blind": true,

@@ -47,6 +47,22 @@ def _welch(a, b):
     return t, df, p
 
 
+def _paired_permutation_p(diffs, n_perm=100000, seed=20260712):
+    """Paired sign-flip permutation test (one-sided, mean(closed-blind)<0).
+    Supplementary robustness check -- the PRE-REGISTERED test remains Welch
+    (adjudication unchanged); this addresses the paired design (same seeds/
+    targets across arms) with an exact-in-spirit, distribution-free method."""
+    import random as _rnd
+    rng = _rnd.Random(seed)
+    obs = sum(diffs) / len(diffs)
+    hits = 0
+    for _ in range(n_perm):
+        v = sum(d if rng.random() < 0.5 else -d for d in diffs) / len(diffs)
+        if v <= obs:
+            hits += 1
+    return (hits + 1) / (n_perm + 1)
+
+
 def _f(r, k):
     try:
         return float(r.get(k, "nan"))
@@ -80,6 +96,8 @@ def main(scan_dir: str) -> None:
     rmse_y = math.sqrt(sum(e * e for e in ey) / len(ey))
 
     t, df, p = _welch(stats["closed"]["errs"], stats["blind"]["errs"])
+    diffs = [a - b for a, b in zip(stats["closed"]["errs"], stats["blind"]["errs"])]
+    p_perm = _paired_permutation_p(diffs)
 
     adj = {
         "d2_loc_y_tracking": bool(math.isfinite(r_y) and r_y >= 0.9),
@@ -95,14 +113,18 @@ def main(scan_dir: str) -> None:
     print()
     print(f"closed localization: r(x_hat,x)={r_x:.4f} (RMSE {rmse_x*100:.2f} cm)  "
           f"r(y_hat,y)={r_y:.4f} (RMSE {rmse_y*100:.2f} cm)  n={len(loc)}")
-    print(f"closed vs blind stop_err_2d: Welch t={t:.2f} df={df:.1f} p(one-sided)={p:.3e}")
+    p_disp = f"{p:.3e}" if p > 1e-6 else "<1e-6(常態近似,勿引用其精確值)"
+    print(f"closed vs blind stop_err_2d: Welch t={t:.2f} df={df:.1f} p(one-sided)={p_disp}")
+    print(f"INFO 成對置換檢定(佐證,同 seed 配對設計): p={p_perm:.2e}"
+          f"(預註冊判準仍為 Welch,裁定不變)")
     print()
     for k, v in adj.items():
         print(f"ADJUDICATION {k}: {v}")
 
     out = {"arms": {a: {k: v for k, v in stats[a].items() if k not in ("rows", "errs")} for a in ARMS},
            "r_x": r_x, "r_y": r_y, "rmse_x_m": rmse_x, "rmse_y_m": rmse_y,
-           "welch_t": t, "welch_p_one_sided": p, "adjudication": adj}
+           "welch_t": t, "welch_p_one_sided": p,
+           "paired_permutation_p_one_sided": p_perm, "adjudication": adj}
     with (scan / "d2_summary.json").open("w") as f:
         json.dump(out, f, indent=1)
     print(f"-> {scan/'d2_summary.json'}")

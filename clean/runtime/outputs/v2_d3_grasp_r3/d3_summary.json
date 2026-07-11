@@ -48,6 +48,7 @@
   }
  },
  "fisher_p_one_sided": 0.00028686307827086277,
+ "mcnemar_exact_p_one_sided": 0.0012884140014648438,
  "adjudication": {
   "d3_align_tracking": true,
   "d3_align_beats_blind": true,

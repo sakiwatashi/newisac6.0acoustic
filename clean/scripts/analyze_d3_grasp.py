@@ -69,6 +69,17 @@ def _fisher_exact_one_sided(a: int, b: int, c: int, d: int) -> float:
     return min(1.0, p)
 
 
+def _mcnemar_exact_p(b: int, c: int) -> float:
+    """McNemar exact (binomial) one-sided p for paired binary outcomes:
+    b = closed-aligned & blind-missed pairs, c = the reverse. Supplementary
+    to the pre-registered Fisher test (adjudication unchanged)."""
+    n = b + c
+    if n == 0:
+        return 1.0
+    from math import comb
+    return sum(comb(n, k) for k in range(b, n + 1)) / (2 ** n)
+
+
 def _load_arm(scan: pathlib.Path, arm: str) -> list[dict]:
     path = scan / arm / "episodes.csv"
     if not path.exists():
@@ -103,8 +114,10 @@ def analyze(scan_dir: str) -> dict:
                      "debug_scaffold": g3.get("debug_scaffold")}
 
     stats: dict[str, dict] = {}
+    rows_by_arm: dict[str, list] = {}
     for arm in ARMS:
         rows = _load_arm(scan, arm)
+        rows_by_arm[arm] = rows
         n = len(rows)
         attempted = [r for r in rows if math.isfinite(_f(r, "align_error_x"))]
         aligned = [r for r in attempted if abs(_f(r, "align_error_x")) <= TOL_ALIGN_X_M]
@@ -137,6 +150,14 @@ def analyze(scan_dir: str) -> dict:
     cc, dd = bl["n_aligned"], bl["n"] - bl["n_aligned"]
     fisher_p = _fisher_exact_one_sided(a, b_, cc, dd)
     out["fisher_p_one_sided"] = fisher_p
+    # 成對佐證:同 episode 配對之 McNemar exact
+    cl_map = {int(r["episode"]): abs(_f(r, "align_error_x")) <= TOL_ALIGN_X_M
+              for r in rows_by_arm["closed"] if math.isfinite(_f(r, "align_error_x"))}
+    bl_map = {int(r["episode"]): abs(_f(r, "align_error_x")) <= TOL_ALIGN_X_M
+              for r in rows_by_arm["blind"] if math.isfinite(_f(r, "align_error_x"))}
+    b_pairs = sum(1 for e in cl_map if e in bl_map and cl_map[e] and not bl_map[e])
+    c_pairs = sum(1 for e in cl_map if e in bl_map and not cl_map[e] and bl_map[e])
+    out["mcnemar_exact_p_one_sided"] = _mcnemar_exact_p(b_pairs, c_pairs)
 
     adj = {
         "d3_align_tracking": bool(math.isfinite(c["r_grasp_target"]) and c["r_grasp_target"] >= 0.9),
@@ -157,6 +178,8 @@ def analyze(scan_dir: str) -> dict:
     print()
     print(f"closed vs blind aligned: {a}/{c['n']} vs {cc}/{bl['n']}  "
           f"Fisher exact (one-sided) p={fisher_p:.3e}")
+    print(f"INFO McNemar exact(成對佐證,同 seed 配對): p={out['mcnemar_exact_p_one_sided']:.3e}"
+          f"(預註冊判準仍為 Fisher,裁定不變)")
     if "g3" in out:
         print(f"g3 (oracle scaffold, quarantined): lift {out['g3']['n_lift_success']}/{out['g3']['n_trials']}")
     print()
