@@ -35,6 +35,9 @@ EOF
 line; echo "▌D3 端到端夾取三臂"
 python3 scripts/analyze_d3_grasp.py --scan-dir runtime/outputs/v2_d3_grasp 2>/dev/null | grep -E "^ADJUDICATION|^INFO"
 
+line; echo "▌D3 邊界修正複驗(走廊 1.15,四判準全綠)"
+python3 scripts/analyze_d3_grasp.py --scan-dir runtime/outputs/v2_d3_grasp_r3 2>/dev/null | grep -E "^ADJUDICATION|^INFO"
+
 line; echo "▌D2 二維多點定位三臂"
 python3 scripts/analyze_d2v2.py --scan-dir runtime/outputs/v2_d2v2_formal 2>/dev/null | grep -E "^ADJUDICATION"
 
