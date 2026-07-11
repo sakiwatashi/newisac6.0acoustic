@@ -1,0 +1,56 @@
+{
+ "tol_align_x_m": 0.02,
+ "arms": {
+  "closed": {
+   "n": 30,
+   "n_attempted": 30,
+   "n_aligned": 25,
+   "n_lift": 23,
+   "n_lift_given_aligned": 20,
+   "align_rate": 0.8333333333333334,
+   "lift_given_align": 0.8,
+   "r_grasp_target": 0.9891427102724408,
+   "align_abs_rmse_m": 0.015855090678824617,
+   "n_invalid": 1,
+   "reasons": {
+    "standoff_est": 30
+   }
+  },
+  "blind": {
+   "n": 30,
+   "n_attempted": 30,
+   "n_aligned": 7,
+   "n_lift": 7,
+   "n_lift_given_aligned": 7,
+   "align_rate": 0.23333333333333334,
+   "lift_given_align": 1.0,
+   "r_grasp_target": NaN,
+   "align_abs_rmse_m": 0.04795870322323748,
+   "n_invalid": 0,
+   "reasons": {
+    "corridor_end": 30
+   }
+  },
+  "open": {
+   "n": 30,
+   "n_attempted": 30,
+   "n_aligned": 7,
+   "n_lift": 6,
+   "n_lift_given_aligned": 6,
+   "align_rate": 0.23333333333333334,
+   "lift_given_align": 0.8571428571428571,
+   "r_grasp_target": NaN,
+   "align_abs_rmse_m": 0.04795854436248719,
+   "n_invalid": 0,
+   "reasons": {
+    "open_fixed": 30
+   }
+  }
+ },
+ "fisher_p_one_sided": 2.959669279513059e-06,
+ "adjudication": {
+  "d3_align_tracking": true,
+  "d3_align_beats_blind": true,
+  "d3_posture_clean": false
+ }
+}
