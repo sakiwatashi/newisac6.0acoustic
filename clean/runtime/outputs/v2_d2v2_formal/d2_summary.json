@@ -1,0 +1,40 @@
+{
+ "arms": {
+  "closed": {
+   "n": 30,
+   "rmse": 0.01875487766085464,
+   "invalid": 0,
+   "reasons": {
+    "standoff_est": 30
+   }
+  },
+  "blind": {
+   "n": 30,
+   "rmse": 0.15004176226068222,
+   "invalid": 0,
+   "reasons": {
+    "corridor_end": 30
+   }
+  },
+  "open": {
+   "n": 30,
+   "rmse": 0.05520022526454952,
+   "invalid": 0,
+   "reasons": {
+    "open_fixed": 30
+   }
+  }
+ },
+ "r_x": 0.9784603921470966,
+ "r_y": 0.9496622084072409,
+ "rmse_x_m": 0.011693912413051946,
+ "rmse_y_m": 0.033379219478276774,
+ "welch_t": -12.100292948208958,
+ "welch_p_one_sided": 5.261748114507844e-34,
+ "adjudication": {
+  "d2_loc_y_tracking": true,
+  "d2_loc_x_tracking": true,
+  "d2_stop2d_beats_blind": true,
+  "d2_posture_clean": true
+ }
+}
