@@ -1,7 +1,32 @@
-# 專案交接文件(現況版,2026-07-12 晚間更新)— 給任何接手的 AI/人
+# 專案交接文件(現況版,2026-07-15 更新)— 給任何接手的 AI/人
 
 > 讀我就夠開工。歷史細節按需往下挖,不必預讀。
 > 舊版交接(`docs/plan_v2/V2_HANDOFF_FOR_NEXT_AI.md`)是 7/8 開工前的計畫書,僅供考古。
+
+
+## 2026-07-15 交接增量（文獻×數學詳版 + Nosek PDF）
+
+### 今天做了什麼
+1. 新增**逐步實驗—數學—文獻原文**對照（非標題表）：
+   - **`docs/plan_v2/EXPERIMENT_MATH_LITERATURE_GROUNDING.md`**
+   - 自第一次 ToF／peak 公式起，經 S1 SNR、OLS、三臂／預註冊、D1–D3 控制、D2 Gauss–Newton，每步含：公式、文獻角色、**PDF 可摘之原文**、自有部分、口試答法。
+2. `METHOD_LITERATURE_MAP.md` 頂部加上指向詳版的連結。
+3. 補下載 **Nosek 2018** 開放稿至  
+   `thesis/literature_key_papers/02_Nosek_2018_The_preregistration_revolution_PNAS.pdf`，並更新 `MISSING_PAPERS_TO_DOWNLOAD.md` 註記。
+4. 本交接檔日期改為 **2026-07-15**。
+
+### 接手若要講「我們對照哪篇論文」
+- **先讀詳版** `EXPERIMENT_MATH_LITERATURE_GROUNDING.md`（有 Zhmud \(S=vT/2\)、Kapoor multilateration 定義、Meyes ablation、Nosek preregistration 等原文）。
+- 一頁速查仍用 `METHOD_LITERATURE_MAP.md`。
+- PDF 包：`thesis/literature_key_papers/`；仍缺 Hayes / Valin / Höfer / Kerstens / He / Tsuchiya 等見 MISSING 清單。
+
+### 未變動的鐵律
+- commit 政策、論文不上公開 GitHub、預註冊不放寬、三臂／配對規則——仍見下文「鐵律」。
+
+### 與 7/12 交接的關係
+- 7/12 晚間實驗／論文／口試 Q&A 現況**仍然有效**；本節只追加文獻對照資產與 Nosek PDF。
+
+---
 
 ## 一句話:這專案是什麼、現在在哪
 
