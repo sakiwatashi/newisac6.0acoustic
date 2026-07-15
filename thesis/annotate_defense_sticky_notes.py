@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import copy
 import random
+import re
 import shutil
 import zipfile
 from datetime import datetime, timezone
@@ -43,21 +44,21 @@ NOTES: list[tuple[str, str, str]] = [
     # ── 摘要 ──────────────────────────────────────────────
     (
         "摘要",
-        "「包絡優先」之感測回授接近方法",
+        "「包絡優先」之感測回授接近流程",
         "【口試・方法】包絡優先＝先量「讀得到」的幾何，再把任務放進包絡。"
         "若被問「為何不直接做閉環」：沒包絡就無法區分感測失敗 vs 控制失敗。"
         "【文獻】組合為本研究方法論；分項見 Valin 等 [4]、Tsuchiya 等 [18]、Liu 等 [13]。",
     ),
     (
         "摘要",
-        "五十二格「配對移除」掃描",
+        "選定幾何格點之配對移除掃描",
         "【口試・方法】配對移除：同姿態先量有目標、再物理移除目標量背景；"
         "差＝目標貢獻。不是「關掉感測器」——那會把整條路徑一併拿掉。"
         "【文獻】Valin 等 [4]、Tsuchiya 等 [18]、Liu 等 [13]（3.3 支柱一）。",
     ),
     (
         "摘要",
-        "以三組對照臂（以下簡稱三臂）驗證純聲學閉環",
+        "閉環採三臂資訊消融",
         "【口試・方法】三臂缺一不可：\n"
         "• 聲學＝完整因果鏈\n"
         "• 盲走＝同管線只拿掉估距資訊（量測動作仍做）→ 證因果\n"
@@ -67,26 +68,26 @@ NOTES: list[tuple[str, str, str]] = [
     ),
     (
         "摘要",
-        "停止位置與目標位置之相關 r＝0.9856",
+        "停止位置與目標 r＝0.9856",
         "【口試・數字】主結果是 D1.5（手臂載具），不是未掛臂 D1（r=0.997）。"
         "主指標是 r/RMSE，不是到達率。彈藥：開環也能 22/30「到達」。",
     ),
     (
         "摘要",
-        "夾持於模擬器中以接觸觸發之附著機制實現",
+        "聲學對位與接觸觸發附著升舉",
         "【口試・邊界／Q2】這是 weld-on-stall／接觸觸發附著，不是摩擦夾持。"
-        "可宣稱：聲學對位；不可宣稱：物理摩擦抓牢。"
+        "可支持：聲學對位；推論不及：物理摩擦抓牢。"
         "盲走抓空→不觸發附著，對照區辨力仍在。",
     ),
     (
         "摘要",
-        "四項獨立實驗均顯示感測器單次輸出不含左右方向資訊",
+        "單次輸出之左右線索經四項檢驗未成立",
         "【口試・負結果】四重證偽＝能量差 ρ=0.357／TDOA r≈0／id 恆 (0,0,0)／rxGroup 第二路噪音。"
         "結論：側向缺在引擎輸出層，不是演算法選錯。",
     ),
     (
         "摘要",
-        "研究範圍限於單一隨機種子與確定性模擬引擎",
+        "全文推論限於單一隨機種子與確定性模擬引擎",
         "【口試・Q3】承認單 seed。但每回合目標在走廊內隨機抽樣；"
         "確定性引擎下跨 seed 主要測的是目標分佈抽樣，不是感測雜訊。"
         "可補：D1.5 三 seed ~2h GPU。噪聲探針：SNR≥20 dB 測距無損。",
@@ -125,21 +126,21 @@ NOTES: list[tuple[str, str, str]] = [
     ),
     (
         "1.2",
-        "在執行前寫定通過判準，避免事後依結果回頭改標準",
+        "執行前寫定通過判準（預註冊）",
         "【口試・方法】預註冊＝判準寫在 runner header、執行前鎖定。"
         "失敗不放寬：D3 首輪 posture 如實 False → 改走廊重跑（鐵律六）。"
         "【文獻】Nosek 等 [5] The preregistration revolution（PNAS 2018）。",
     ),
     (
         "1.2",
-        "資訊消融對照（盲走臂失能：保留量測動作、拿掉估距資訊）",
+        "盲走失能能否把因果鎖在聲學資訊上",
         "【口試・方法】消融＝刻意拿掉資訊看是否失能。"
         "盲走保留量測時序／成本，只把估距換成 +∞ → 分離「量測副作用」與「資訊使用」。"
         "【文獻】Meyes 等 [11] Ablation studies in ANNs。",
     ),
     (
         "1.2",
-        "夾持機制與摩擦限制之宣稱邊界見 5.3、6.2 節",
+        "對位／附著與摩擦界線見 5.3、6.2",
         "【口試・RQ4】對位已驗證；摩擦／附著細節見 5.3。側向見 5.4。",
     ),
     (
@@ -179,46 +180,35 @@ NOTES: list[tuple[str, str, str]] = [
     ),
     (
         "1.4",
-        "SNR：本文之偵測訊噪比",
+        "SNR（配對移除定義之偵測訊噪比，見 3.3）",
         "【口試・公式】本文 SNR 不是通訊 SNR。"
         "SNR = max|W有−W無| / max|W有−W雜訊參考|；>10 可偵測（見 3.3）。",
     ),
     (
         "1.4",
-        "ρ：斯皮爾曼等級相關係數",
-        "【口試・統計】側向能量用 ρ（單調關係），不用 Pearson r——"
-        "因為要測「橫移是否單調改變能量差」，不是線性擬合。判準 ρ≥0.9，實測 0.357→證偽。",
+        "RMSE、r／ρ、IK、seed",
+        "【口試・統計】側向能量用 ρ（單調），不用 Pearson；ρ≥0.9 判準，實測 0.357→證偽。"
+        "IK＝末端位姿→關節角；暖啟動防多解。D3 遠端升舉 IK 無解＝可達性非聲學。",
     ),
     (
         "1.4",
-        "IK：逆向運動學，由末端目標位姿反解關節角",
-        "【口試・名詞】IK＝末端位姿 → 六軸關節角。"
-        "暖啟動＋單步關節變化上限，防多解跳躍。D3 遠端升舉 IK 無解＝可達性邊界，非聲學。",
-    ),
-    (
-        "1.4",
-        "對位：夾取前夾爪中心與目標中心在水平方向是否落在預先鎖定容差內",
-        "【口試・名詞】對位＝夾爪中心 vs 目標中心水平吻合（±2 cm 預註冊容差）。"
-        "與「升舉成功」分開陳報，避免把力學混進聲學能力。",
-    ),
-    (
-        "1.4",
-        "多點定位：在多個已知位置各量一次距離",
-        "【口試・名詞】多點定位＝多個已知位置各量距離 → 圓／球交會解座標。"
-        "D2：5 視點、基線 0.3 m、最小平方圓交會。屬合成孔徑／運動合成族，非雙耳陣列。"
-        "【文獻】Kapoor 等 [2]；Hayes 等 [1]。",
-    ),
-    (
-        "1.4",
-        "指標失效：僅看「到達率」等表面數字時",
+        "指標失效：表面到達率可被走廊寬度撐高",
         "【口試・方法學】表面指標（到達率）可被走廊寬度撐起來。"
-        "主指標改用停止位置相關性 + 盲走消融。6.1 開環 73% 到達率是活教材。",
+        "主指標改用停止位置相關性 + 盲走消融。6.1 開環到達率是活教材。",
     ),
     (
         "1.4",
-        "貢獻五（實驗效度設計）",
+        "盲走臂：量測管線同聲學臂，僅估距改無資訊值",
+        "【口試・名詞】對位＝夾爪中心 vs 目標中心水平吻合（±2 cm）。"
+        "多點定位＝多視點距離交會（D2：5 點、基線 0.3 m）。"
+        "【文獻】Kapoor 等 [2]；Hayes 等 [1]；Meyes 等 [11]。",
+    ),
+    (
+        "1.4",
+        "貢獻定位（全文一句）",
         "【口試・Q1 彈藥】若被譏「只是在測光線追蹤測距儀」："
-        "正結果是載體；負結果地圖＋效度框架才是可推廣主張（6.1）。",
+        "正結果是載體；負結果地圖＋效度框架才是可推廣主張（6.1）。"
+        "口頭收斂三項：包絡優先／三臂因果／側向證偽＋多視點恢復。",
     ),
     # ── 第二章 ────────────────────────────────────────────
     (
@@ -295,8 +285,9 @@ NOTES: list[tuple[str, str, str]] = [
     ),
     (
         "2.8",
-        "填補文獻上的交集缺口",
-        "【口試】交集＝UR10e＋RTX Acoustic＋回授接近＋可重複效度流程；貢獻是流程不是發明 WPM。",
+        "表 2.1 最接近工作類型與本研究之對照",
+        "【口試】表回答「差在哪」：元件都會撞車；組合＝RTX Acoustic＋三臂＋包絡＋側向證偽。"
+        "貢獻是流程不是發明 ToF／多點定位。",
     ),
     # ── 第三章 ────────────────────────────────────────────
     (
@@ -331,7 +322,12 @@ NOTES: list[tuple[str, str, str]] = [
     (
         "3.2",
         "樣本週期 = 2 ÷（斜率 × 聲速）",
-        "【口試・公式】T=2/(s·c)。視軸~103 µs、桌高~101 µs，近預設~102 µs；仍當輪自校。"
+        "【口試・公式卡①自校】全文核心估距（不必背矩陣）：\n"
+        "• peak = a·d + b  （峰值取樣點對已知距離 OLS）\n"
+        "• d̂ = (peak − b) / a  （控制用估距）\n"
+        "• T = 2/(a·c)  （樣本週期；c＝聲速）\n"
+        "• ToF 敘事：d ≈ peak·T·c/2  與上式一致\n"
+        "視軸 T≈103 µs、桌高≈101 µs；仍當輪自校，禁用固定 132.5 µs。\n"
         "【文獻】Zhmud 等 [7]。",
     ),
     (
@@ -342,7 +338,10 @@ NOTES: list[tuple[str, str, str]] = [
     (
         "3.3",
         "max|W有目標 − W無目標| ÷ max|W有目標 − W雜訊參考|",
-        "【口試・公式】分子＝目標貢獻；分母＝重複量測雜訊底；>10 可偵測。不是通訊 SNR。",
+        "【口試・公式卡②SNR】本文操作定義（不是通訊 SNR）：\n"
+        "SNR = max|W有 − W無| / max|W有 − W雜訊參考|\n"
+        "W＝多幀平均波形；SNR>10 → 可偵測（S1 門檻）。\n"
+        "分子＝目標貢獻；分母＝重複量測雜訊底。",
     ),
     (
         "3.3",
@@ -393,7 +392,11 @@ NOTES: list[tuple[str, str, str]] = [
     (
         "3.5",
         "已知垂直高度差（約 0.19–0.20 m）換成水平距離估計",
-        "【口試・控制律】3D 斜距→水平距，再比 standoff 0.35 m。高度差是場景常數。",
+        "【口試・公式卡③控制律】\n"
+        "• d̂_3D 來自 ①；水平：d̂_h = sqrt(d̂_3D² − Δh²)，Δh≈0.19–0.20 m（場景常數）\n"
+        "• 若 d̂_h ≤ 0.35 m（standoff）→ 停止；否則沿軸前進 0.05 m\n"
+        "• 無濾波、無多步預測——可歸因優先\n"
+        "盲走：d̂→∞ → 永不聲學停 → 撞護欄。",
     ),
     (
         "3.5",
@@ -404,6 +407,12 @@ NOTES: list[tuple[str, str, str]] = [
         "3.5",
         "走廊端點強制停止",
         "【口試・名詞】護欄≠聲學停止；盲走幾乎全靠它停。",
+    ),
+    (
+        "3.5",
+        "控制器保持最簡：固定步長前進、無濾波、無多步預測",
+        "【口試・公式卡④對位】D3 成功定義：|x_夾爪 − x_目標| ≤ 0.02 m（±2 cm 預註冊）。\n"
+        "升舉成功：附著後目標升高 ≥ 0.05 m（與對位分開陳報）。",
     ),
     (
         "3.5",
@@ -538,22 +547,22 @@ NOTES: list[tuple[str, str, str]] = [
     ),
     (
         "5.3",
-        "費雪精確檢定（小樣本 2×2 精確機率）單尾 p＝0.004",
+        "聲學對盲走費雪精確檢定單尾 p＝0.004",
         "【口試】首輪 18/30 vs 7/30；複驗 p＜0.001。",
     ),
     (
         "5.3",
-        "對位率與升舉率分開陳報，不相乘成總成功率",
+        "對位率與升舉率不相乘成「總成功率」",
         "【口試】聲學 vs 力學分開，避免 weld/捕捉窗洗成聲學成功率。",
     ),
     (
         "5.3",
-        "姿態全淨因 90 回合中 3 回合升舉階段 IK 無解",
+        "90 回合中 3 回合在升舉階段 IK 無解",
         "【口試】如實 False；可達性邊界；縮走廊重跑不改判準。",
     ),
     (
         "5.3",
-        "走廊上限由 1.20 m 縮至 1.15 m",
+        "正典主結果為獨立複驗（走廊上限 1.20→1.15 m",
         "【口試・複驗】新目錄重跑；四判準全綠；數據保留。",
     ),
     (
@@ -564,7 +573,10 @@ NOTES: list[tuple[str, str, str]] = [
     (
         "5.4",
         "側向掃描五個量測位置（橫向基線 0.30 m）",
-        "【口試・D2】5 點×單軸測距→圓交會；盲走估距先∞→定位無解。"
+        "【口試・公式卡⑤D2】五視點各得 d̂_i，求 (x,y) 使\n"
+        "Σ_i ( d̂_i − √[(x−x_i)²+(y−y_i)²] )²  最小（最小平方圓交會）。\n"
+        "實作：Gauss–Newton 數值解（程式有 JᵀJ）；正文不展開矩陣推導。\n"
+        "盲走：d̂→∞ → 定位無解。不是新公式，是 Kapoor/Hayes 譜系。\n"
         "【文獻】Kapoor [2]；Hayes [1]；Meyes [11]。",
     ),
     (
@@ -585,8 +597,8 @@ NOTES: list[tuple[str, str, str]] = [
     # ── 第六章 ────────────────────────────────────────────
     (
         "6.1",
-        "22/30（73%）「誤差≤10 cm」的到達率",
-        "【口試・金句】開環 73%＝指標失效現場演示；主指標必須 r＋消融。"
+        "不能只報告到達率，可由 D1.5 開環臂直接說明",
+        "【口試・金句】開環高到達率＋r≈0＝指標失效現場演示；主指標必須 r＋消融。"
         "【文獻】Meyes 等 [11]；Nosek 等 [5]。",
     ),
     (
@@ -596,25 +608,31 @@ NOTES: list[tuple[str, str, str]] = [
     ),
     (
         "6.2",
-        "可宣稱與不可宣稱之範圍界定",
-        "【口試・總表】可：1D 閉環、對位、包絡、D2 合成側向、效度。"
-        "不可：摩擦夾持、單次側向、實機、0.35m 內閉環、跨 seed、2D 再夾取。",
+        "推論範圍（可支持與不支持的結論）",
+        "【口試・總表】可支持：1D 閉環、對位（正典 80%）、包絡、D2 合成側向、效度。"
+        "不及：摩擦夾持、單次側向、實機、0.32m 內閉環、跨 seed、2D 再夾取。",
     ),
     (
         "6.2",
-        "跨隨機種子的統計穩健性",
-        "【口試・Q3】在不可宣稱清單；低成本＝同判準多 seed 重跑。承認＋方案。",
+        "跨隨機種子與跨場景的統計穩健性",
+        "【口試・Q3】在「推論不及」清單；低成本＝同判準多 seed 重跑。承認＋方案。",
     ),
     (
         "6.2",
-        "二維定位之後再夾取的完整任務鏈",
-        "【口試】D2 定位／閉環已完成；側向 3.3 cm＞夾取窗 → 再夾取未宣稱。",
+        "二維定位後再夾取的完整鏈",
+        "【口試】D2 定位／閉環已完成；側向 3.3 cm＞夾取窗 → 再夾取未入推論。",
+    ),
+    (
+        "6.4",
+        "6.4 研究結論",
+        "【口試・收尾】逐題 RQ1–4；貢獻＝驗證鏈非新物理；正典 D3＝走廊修正複驗。",
     ),
     (
         "6.3",
         "D2 已完成二維定位與閉環接近，但側向誤差 3.3 cm 仍大於夾取容差",
         "【口試】正文未來方向；實驗側 g2-wide 1.84 止損（未入正文）可作彈藥。",
     ),
+
     (
         "6.3",
         "滑動窗口對最近數步距離做圓交會",
@@ -648,6 +666,41 @@ def qn(tag: str) -> str:
         "pr": REL_NS,
     }[prefix]
     return f"{{{ns}}}{local}"
+
+
+def _local_tag(tag: str) -> str:
+    return tag.split("}", 1)[-1] if tag.startswith("{") else tag
+
+
+def write_default_ns_xml(path: Path, root: ET.Element, default_ns: str) -> None:
+    """Serialize package parts that Word requires with a *default* xmlns (not ns0:).
+
+    ElementTree.ET.write() rewrites default namespaces as ns0/ns1, which makes
+    Microsoft Word and LibreOffice refuse to open the docx.
+    """
+    parts = ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?>']
+    root_name = _local_tag(root.tag)
+    parts.append(f'<{root_name} xmlns="{default_ns}">')
+    for child in root:
+        name = _local_tag(child.tag)
+        attrs = " ".join(f'{k}="{v}"' for k, v in child.attrib.items())
+        if attrs:
+            parts.append(f"<{name} {attrs}/>")
+        else:
+            parts.append(f"<{name}/>")
+    parts.append(f"</{root_name}>")
+    path.write_text("".join(parts), encoding="utf-8")
+
+
+def fix_markup_compat_prefix(xml_path: Path) -> None:
+    """Rewrite ElementTree's xmlns:ns1 markup-compat → mc: (cosmetic, safer for Word)."""
+    text = xml_path.read_text(encoding="utf-8")
+    if 'xmlns:ns1="' not in text or "markup-compatibility" not in text:
+        return
+    text = text.replace("xmlns:ns1=", "xmlns:mc=")
+    # only replace prefix uses, not the URI string itself
+    text = re.sub(r"(?<=[<\s])ns1:", "mc:", text)
+    xml_path.write_text(text, encoding="utf-8")
 
 
 def hex_id() -> str:
@@ -694,7 +747,8 @@ def ensure_comment_parts(word: Path, ct_path: Path, rels_path: Path) -> None:
             el = ET.SubElement(root, qn("ct:Override"))
             el.set("PartName", part)
             el.set("ContentType", ctype)
-    ct.write(ct_path, encoding="UTF-8", xml_declaration=True)
+    # Must use default xmlns — ET.write emits ns0: which Word/LibreOffice reject.
+    write_default_ns_xml(ct_path, root, CT_NS)
 
     # relationships
     rels = ET.parse(rels_path)
@@ -721,7 +775,7 @@ def ensure_comment_parts(word: Path, ct_path: Path, rels_path: Path) -> None:
             el.set("Id", f"rId{max_id}")
             el.set("Type", rtype)
             el.set("Target", target)
-    rels.write(rels_path, encoding="UTF-8", xml_declaration=True)
+    write_default_ns_xml(rels_path, rroot, REL_NS)
 
 
 def append_comment_records(
@@ -1033,6 +1087,7 @@ def apply(docx_path: Path, work: Path) -> list[tuple[int, str, str, str]]:
         results.append((cid, chapter, anchor, note))
 
     tree.write(doc_path, encoding="UTF-8", xml_declaration=True)
+    fix_markup_compat_prefix(doc_path)
 
     if failures:
         print("FAILURES:")

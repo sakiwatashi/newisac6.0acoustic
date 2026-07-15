@@ -5,12 +5,25 @@
 
 > 註:本目錄同時作為原始工作目錄(`isaacsim6.0/clean/`)內之精選快照與 GitHub 公開倉庫之根目錄;
 > 論文全文(`thesis/`)於口試前不隨公開倉庫發佈。
+> **正典狀態一頁看懂**: [`STATUS.md`](STATUS.md) · 資料目錄角色: [`runtime/outputs/MANIFEST.md`](runtime/outputs/MANIFEST.md)
+
+## Current canonical result
+
+```text
+S1 36/52 detectable
+S2 ranging r=0.9994 (lateral pre-registered falsification)
+D1.5 stop r=0.9856, RMSE=2.8 cm   ← main closed-loop result
+D2  lateral r=0.950; 2-D stop RMSE=1.9 cm
+D3-r3  alignment 80% vs blind 33%; 90 eps posture/IK clean  ← grasp primary
+D3-r1  historical failure (3/90 lift IK) retained under v2_d3_grasp/
+```
 
 ## 快速驗證(30 秒,零 GPU)
 
 ```bash
 git clone https://github.com/sakiwatashi/isaacsimacousticfinal.git
 cd isaacsimacousticfinal
+python3 -m pip install -r requirements-analysis.txt   # numpy
 bash runtime/verify_all.sh    # 從原始數據當場重算全部裁定;全過 exit 0,否則 exit 1
 ```
 

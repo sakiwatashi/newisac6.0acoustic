@@ -1,0 +1,34 @@
+{
+  "gate": "g2w (2D-grasp gate 2: wide-baseline probe)",
+  "config": {
+    "scan_x_m": 0.6,
+    "baseline_m": 0.5,
+    "n_vantages": 15,
+    "n_targets": 13
+  },
+  "criteria": {
+    "g2w_high_bearing_ranging": {
+      "pass": true,
+      "rmse_hi_cm": 1.49,
+      "limit_cm": 3.29,
+      "bias_hi_cm": 1.38
+    },
+    "g2w_high_bearing_detect": {
+      "pass": true,
+      "rate": "18/18 = 100%"
+    },
+    "g2w_lateral_rmse": {
+      "pass": false,
+      "value_cm": 1.84,
+      "limit_cm": 1.5
+    },
+    "g2w_loc_y_valid": {
+      "pass": true,
+      "r": 0.995
+    }
+  },
+  "verdict": "FAIL — 依預註冊止損,2D 夾取路線以現行設計判定不可行(無降級梯,不做事後參數搜索)",
+  "attribution": "失效機制=方位角相關之系統性測距偏置:殘差 bias 自 10–20° 的 -0.03 cm 單調升至 37–45° 的 +1.47 cm(高角度回波來自 6 cm 方形目標之近側稜角而非正對面,校正模型以視軸正對面擬合);此偏置不隨視點平均消除,直接轉化為遠排目標之側向外推偏差 2–3.4 cm。誤差預算模型假設殘差與角度無關,故預測 1.14 cm 偏樂觀。偵測與隨機誤差在 45° 錐緣皆成立(檢出 100%、RMSE 無膨脹)——死因是偏置,不是噪聲。",
+  "possible_redesign_path_not_executed": "鐵律六允許:歸因→修設計(方位角相關校正,或以延展目標模型取代點目標之圓交會)→新目錄完整重跑新閘門。屬第二次咬蘋果,是否執行待用戶/教授拍板。",
+  "note": "縱向 RMSE 0.68 cm、r(ŷ,y)=0.995 皆優;失效侷限於側向絕對精度 vs 捕捉窗。"
+}

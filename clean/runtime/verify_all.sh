@@ -4,7 +4,9 @@
 # 任何裁定數字都不是「讀報告」,而是當場由 csv/json/npy 重新計算。
 # 用法:bash runtime/verify_all.sh
 # ═══════════════════════════════════════════════════════════════════════════
-set -u
+# -u: 未定義變數即失敗; -o pipefail: 管線中任一命令失敗即失敗。
+# 不用 set -e: 各段已用 NFAIL 累計後統一 exit 1,避免半途靜默中斷難讀。
+set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # 可攜:相對本腳本定位
 cd "$ROOT"
 NFAIL=0
@@ -41,11 +43,27 @@ for k in ('g1_object_detectable','g2_object_ranging','m3b_mover_effect_null'):
     print(f"ADJUDICATION {k}: {a[k]}")
 EOF
 
-line; echo "▌D3 端到端夾取三臂"
-python3 scripts/analyze_d3_grasp.py --scan-dir runtime/outputs/v2_d3_grasp 2>/dev/null | grep -E "^ADJUDICATION|^INFO" || { echo "  ✗ D3 失敗"; NFAIL=$((NFAIL+1)); }
-echo "(首輪 posture_clean=False 為如實記錄之邊界失效,已由下方複驗修正——不計失敗)"
+line; echo "▌D3 端到端夾取三臂(歷史首輪 r1:預期 posture_clean=False)"
+# historical failure case: align criteria True, posture_clean False (3/90 lift IK)
+python3 - <<'EOF' || NFAIL=$((NFAIL+1))
+import subprocess, sys
+out = subprocess.check_output(
+    [sys.executable, "scripts/analyze_d3_grasp.py", "--scan-dir", "runtime/outputs/v2_d3_grasp"],
+    text=True, stderr=subprocess.STDOUT,
+)
+print("\n".join(l for l in out.splitlines() if l.startswith("ADJUDICATION") or l.startswith("INFO")))
+lines = {l.split(":",1)[0].replace("ADJUDICATION ","").strip(): l.split(":",1)[1].strip()
+         for l in out.splitlines() if l.startswith("ADJUDICATION")}
+ok = (lines.get("d3_align_tracking") == "True"
+      and lines.get("d3_align_beats_blind") == "True"
+      and lines.get("d3_posture_clean") == "False")
+if not ok:
+    print("  ✗ D3-r1 未符合歷史失效形狀(align True×2, posture_clean False); got", lines)
+    sys.exit(1)
+print("  ✓ D3-r1 歷史失效形狀符合(保留為失效案例;正典見 r3)")
+EOF
 
-line; echo "▌D3 邊界修正複驗(走廊 1.15,四判準全綠)"
+line; echo "▌D3 邊界修正複驗 r3(正典:走廊 1.15,四判準全綠)"
 run_adj D3複驗 0 bash -c 'python3 scripts/analyze_d3_grasp.py --scan-dir runtime/outputs/v2_d3_grasp_r3 | grep -E "^ADJUDICATION|^INFO"' 
 
 line; echo "▌D2 二維多點定位三臂"
@@ -111,15 +129,11 @@ print(f"  手臂姿態違規(穿桌/穿地) = {viol_p}")
 print(f"  感測器位姿違規(歪頭/沉降) = {viol_s}")
 EOF
 
-line; echo "▌單元測試"
-for t in scripts/test_acoustic_calibration_v1.py scripts/test_acoustic_features.py scripts/test_grasp_passport_reach.py scripts/test_ultrasonic_closed_loop_controller.py; do
-  if [ -f "$t" ]; then
-    python3 "$t" >/dev/null 2>&1 && echo "  $(basename $t) OK" || { echo "  $(basename $t) FAILED"; NFAIL=$((NFAIL+1)); }
-  else
-    echo "  $(basename $t):未含於本快照(屬完整工作目錄之舊管線測試)——略過"
-  fi
-done
+line; echo "▌離線 self-test(不依賴舊管線模組)"
+# 完整工作樹可另含 scripts/test_*.py(舊管線 acoustic_calibration/grasp_passport);
+# 公開快照刻意不納入那些依賴,只跑 analyzer 內建 self-test。
 python3 scripts/analyze_d3_grasp.py --self-test >/dev/null 2>&1 && echo "  analyze_d3_grasp --self-test OK" || { echo "  analyze_d3_grasp self-test FAILED"; NFAIL=$((NFAIL+1)); }
+python3 scripts/analyze_d2v2.py --help >/dev/null 2>&1 && echo "  analyze_d2v2 import OK" || { echo "  analyze_d2v2 FAILED"; NFAIL=$((NFAIL+1)); }
 
 line
 if [ "$NFAIL" -gt 0 ]; then

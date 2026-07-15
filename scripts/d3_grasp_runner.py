@@ -147,6 +147,16 @@ parser.add_argument("--standoff", type=float, default=0.35)
 parser.add_argument("--step", type=float, default=0.05)
 parser.add_argument("--max-steps", type=int, default=40)
 parser.add_argument("--sensor-offset", type=float, default=0.25)
+parser.add_argument(
+    "--target-x-min", type=float, default=1.00,
+    help="Corridor lower bound for target x (m). Formal r3 default 1.00.",
+)
+parser.add_argument(
+    "--target-x-max", type=float, default=1.15,
+    help="Corridor upper bound for target x (m). Canonical re-run (r3)=1.15; "
+         "historical first formal=1.20; intermediate r2=1.18. New runs must use "
+         "a NEW --output-dir; prior dirs are preserved.",
+)
 parser.add_argument("--smoke", action="store_true")
 args, _ = parser.parse_known_args()
 
@@ -226,20 +236,17 @@ SENSOR_X_START_M = 0.60
 # success band ended at ~1.26 with a lower grasp z). Corridor shrunk
 # accordingly; all pre-registered criteria unchanged.
 CORRIDOR_GUARD_X_M = 0.95
-TARGET_X_MIN_M = 1.00
-TARGET_X_MAX_M = 1.15   # rev26 (was 1.18/1.20) (2026-07-12): was 1.20. The formal run's only
-                        # criterion failure was 3/90 far-edge episodes at
-                        # x~1.19 where the LIFT (not the approach, not the
-                        # audits) hit the arm's reach limit -- exactly the
-                        # correction direction pre-registered in
-                        # docs/plan_v2/reports/D3_grasp_report.md ("走廊上限
-                        # 縮至 1.18"). rev26: 1.18 still left 1/90 (grasp
-                        # target = ESTIMATE, up to ~2 cm beyond the true
-                        # target, so the lift-dead zone at ~1.17+ was still
-                        # reachable); 1.15 + 2 cm estimate error stays clear.
-                        # Each re-run goes to a NEW directory; all prior runs
-                        # are preserved untouched.
-BAR_X_NOMINAL_M = (TARGET_X_MIN_M + TARGET_X_MAX_M) / 2.0   # 1.15: blind/open nominal
+# Corridor bounds are CLI-overridable so historical r1 (1.20) / r2 (1.18) can
+# be reproduced without editing source. Default = r3 canonical (1.15).
+# History: first formal 1.20 → 3/90 lift-IK fails at far edge; r2 1.18 → 1/90;
+# r3 1.15 → 0/90, all four pre-registered criteria True (see D3_grasp_report).
+TARGET_X_MIN_M = float(args.target_x_min)
+TARGET_X_MAX_M = float(args.target_x_max)
+if TARGET_X_MAX_M <= TARGET_X_MIN_M:
+    raise SystemExit(
+        f"--target-x-max ({TARGET_X_MAX_M}) must be > --target-x-min ({TARGET_X_MIN_M})"
+    )
+BAR_X_NOMINAL_M = (TARGET_X_MIN_M + TARGET_X_MAX_M) / 2.0
 
 PAD_HALF_LEN_M = 0.02          # documented estimate; g3 measures the real window
 ADVANCE_STEP_M = 0.02

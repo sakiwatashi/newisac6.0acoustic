@@ -48,3 +48,7 @@ IsaacLab/
 .env.*
 .~lock.*
 **/.~lock.*
+# Thesis working junk (redundant zip, docx backups, extracted docx dir)
+thesis/literature_key_papers.zip
+thesis/*.docx.bak_*
+thesis/THESIS_DRAFT_FCU_v2 (2).docx/

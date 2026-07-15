@@ -1,0 +1,103 @@
+{
+ "smoke": false,
+ "target_grid": [
+  [
+   1.0,
+   -0.075
+  ],
+  [
+   1.0,
+   0.0
+  ],
+  [
+   1.0,
+   0.075
+  ],
+  [
+   1.0,
+   0.15
+  ],
+  [
+   1.075,
+   -0.15
+  ],
+  [
+   1.075,
+   -0.075
+  ],
+  [
+   1.075,
+   0.0
+  ],
+  [
+   1.075,
+   0.075
+  ],
+  [
+   1.075,
+   0.15
+  ],
+  [
+   1.15,
+   -0.15
+  ],
+  [
+   1.15,
+   -0.075
+  ],
+  [
+   1.15,
+   0.0
+  ],
+  [
+   1.15,
+   0.075
+  ]
+ ],
+ "vantage_y_m": [
+  -0.25,
+  -0.214286,
+  -0.178571,
+  -0.142857,
+  -0.107143,
+  -0.071429,
+  -0.035714,
+  0.0,
+  0.035714,
+  0.071429,
+  0.107143,
+  0.142857,
+  0.178571,
+  0.214286,
+  0.25
+ ],
+ "sensor_x_vantage_m": 0.6,
+ "bar_scale_m": [
+  0.06,
+  0.06,
+  0.12
+ ],
+ "bar_z_m": 0.46,
+ "calibration": {
+  "slope_smp_per_m": 58.124231086544896,
+  "intercept_smp": -3.905722723617398,
+  "t_cal_us": 100.31795141350699,
+  "n_kept": 19,
+  "r": 0.9955580275068419,
+  "rmse_m": 0.017761276227341583,
+  "fit_range_m": [
+   0.39983456539578754,
+   1.1000026994240706
+  ],
+  "source": "POOLED kept points: g2(4)+m3b_target(7)+m3b_sensor(8), justified by m3b_mover_effect_null PASS; adjudicated 2026-07-10"
+ },
+ "gripper_variant": "Robotiq_2f_85",
+ "criteria_text": {
+  "g2w_high_bearing_ranging": "RMSE(range err | bearing>33.5deg) <= 2x RMSE(<=33.5deg), same probe (offline)",
+  "g2w_high_bearing_detect": ">=95% of bearing>33.5deg measurements finite in 0.3-1.6 m (offline)",
+  "g2w_lateral_rmse": "RMSE(y_hat - y_true) <= 0.015 m over target grid (offline)",
+  "g2w_loc_y_valid": "Pearson r(y_hat, y_true) >= 0.9 (offline)"
+ },
+ "timestamp": "2026-07-12T22:20:00.164734",
+ "script": "d2v2_trilat_probe_wide.py"
+}

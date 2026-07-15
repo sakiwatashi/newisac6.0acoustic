@@ -1,0 +1,5 @@
+# 離線分析／一鍵驗證（零 GPU）所需。不需安裝 Isaac Sim。
+# Python 3.10+（公開快照於 3.12 驗證過）
+numpy>=1.24
+# matplotlib 僅繪圖腳本需要；verify_all 可不裝
+# matplotlib>=3.7

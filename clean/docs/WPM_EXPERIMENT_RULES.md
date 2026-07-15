@@ -1,13 +1,16 @@
 # WPM 聲學實驗規則文本
 
-> ⚠️ **校正常數版本沿革(2026-07-12 補註)**:本文件下述之 `T_US = 132.5e-6` 為
-> **舊管線時代(≤2026-07-06,armfree 場景)之歷史校正值,V2 起不再適用**。
-> - V2 桌面高度自校:≈ **103 µs**(`runtime/outputs/v2_s2_datasheet/datasheet_summary.json`)
-> - **正式實驗一律以當輪自校之 slope/intercept 換算距離**(如
->   `runtime/outputs/v2_d3_gates/bar_calibration.json`,內含來源與擬合統計),
->   不沿用任何固定常數。文中 132.5 僅供理解歷史腳本,勿用於新程式。
+> ⚠️ **V2 正典（2026-07 起，讀此欄即可）**
+>
+> 1. **距離換算**：不用全域固定 `T_US`。每一正式感測幾何用當輪  
+>    `peak_index = a·distance + b`（slope/intercept JSON）換算；  
+>    例：`runtime/outputs/v2_d3_gates/bar_calibration.json`。  
+>    量級參考：V2 桌高自校 ≈ **103 µs**（`v2_s2_datasheet`）；舊 armfree 曾見 **132.5 µs**，**僅歷史、禁止新程式使用**。詳規則 1-4。
+> 2. **手臂與目標**：舊「腕部貼近掛載」下手臂 mesh 常主導／遮蔽 Cube 回波；  
+>    **V2 腕載前伸 0.25 m 後**目標可再被偵測（D1.5／D3）。勿讀成「場景有手臂就永遠不行」。詳規則 2-2。
+> 3. 本文其餘章節含 2026-07-06 前開發教訓；與上列衝突時**以上列與 V2 正式實驗為準**。
 
-**版本**: 1.0 | **日期**: 2026-07-06 | **基於**: 10+ 次實驗的教訓
+**版本**: 1.1 | **日期**: 2026-07-13（1.0 = 2026-07-06） | **基於**: 開發教訓 + V2 正式鏈校正
 
 ---
 
@@ -57,19 +60,36 @@ tof_first = float(tof_all[0])
 assert tof_first == 0.0, "timeOffsetNs 不是 0？需要重新確認"
 ```
 
-不要用 `timeOffsetNs` 做任何距離計算。用 `peak_sample_idx * T_US * V / 2`。
+不要用 `timeOffsetNs` 做任何距離計算。距離一律由**當輪自校**之 `peak → distance` 映射換算（見規則 1-4），勿假設固定 `T_US`。
 
 ---
 
-### 規則 1-4：樣本週期 T_US = 132.5 µs（已校正值）
+### 規則 1-4：樣本週期**不得**用全域固定常數（V2 正典）
+
+**現行規則（2026-07 起，論文與全部 V2 正式實驗）**：
+
+1. 每一正式感測幾何，以已知距離資料擬合 `peak_index = a · distance + b`。
+2. 控制器與分析器只用當輪 `a, b`（或等價 slope/intercept JSON）；原始波形落盤可離線重算。
+3. 可由斜率**衍生**樣本週期近似值 `T ≈ 2/(a·c)` 作說明，但 **T 不可作為控制器唯一換算常數**。
+4. 參考量級：V2 桌面高度自校 ≈ **103 µs**（`runtime/outputs/v2_s2_datasheet/`）；不同掛載／俯角會變。
 
 ```python
-T_US = 132.5e-6    # 秒/樣本（從實驗反推，非 schema default 的 102.4 µs）
-V_SOUND = 343.0    # m/s
-# 距離換算：dist_m = peak_sample_idx * T_US * V_SOUND / 2
+# ✅ V2 正典：用當輪校正檔
+# cal = json.load(open(".../bar_calibration.json"))
+# dist_m = (peak_idx - cal["intercept"]) / cal["slope"]
+
+# ❌ 禁止：dist_m = peak_idx * T_FIXED * 343 / 2
 ```
 
-從實驗數據驗證（dist=0.6m, peak=22）：`22 × 132.5e-6 × 343 / 2 = 0.50m ✓`
+#### 附：歷史觀察（≤2026-07-06 armfree，**非正典**）
+
+舊管線在特定 armfree 場景曾反推 `T_US ≈ 132.5e-6`。該值**不適用**於 V2 桌面高度與腕載幾何；保留僅供閱讀舊腳本，**勿用於新程式或論文換算**。
+
+```python
+# HISTORICAL ONLY — do not use in V2
+# T_US = 132.5e-6
+# dist_m = peak_idx * T_US * 343.0 / 2   # was an armfree-era approximation
+```
 
 ---
 
@@ -78,7 +98,8 @@ V_SOUND = 343.0    # m/s
 ### 規則 2-1：WPM 是真正的 Ray Tracer
 
 WPM **確實追蹤幾何聲波路徑**，包括 `UsdGeom.Cube` prim。
-- 有 Cube 目標在 (dist, 0, 0)：peak_sample_idx = dist / (T_US × V / 2)，r = +0.9998
+- 有 Cube 目標在 (dist, 0, 0)：peak 與距離高度線性（arm-free 早期量測 r≈0.9998）
+- 距離↔peak 的**工程換算**請用當輪自校（規則 1-4），不要假設固定 `T_US`
 - WPM 的 `azSpanDeg`、`elSpanDeg`、`traceTreeDepth` 是真正的 ray tracing 參數
 
 **官方描述**（`acoustic_extension.rst`）：
@@ -86,15 +107,22 @@ WPM **確實追蹤幾何聲波路徑**，包括 `UsdGeom.Cube` prim。
 
 ---
 
-### 規則 2-2：USD Mesh 資產優先於 Cube prim
+### 規則 2-2：USD Mesh 與 Cube 的相對貢獻（依掛載幾何）
 
 | 場景幾何 | WPM 可見性 | 備註 |
 |---------|-----------|------|
-| UR10e URDF mesh | ✅ 高優先 | 主導信號，遮蓋 Cube |
-| `UsdGeom.Cube` | ✅ 可見 | 但會被 USD Mesh 蓋掉 |
-| 房間牆壁（Cube） | ✅ 可見 | 但被 arm mesh 和参數化模型蓋掉 |
+| UR10e URDF mesh | ✅ 高優先 | 近感測器時可主導回波；**非「永遠遮死目標」** |
+| `UsdGeom.Cube` 目標 | ✅ 可見 | 在腕載聲影內可能被淹沒；前伸掛載後可恢復 |
+| 房間牆壁（Cube） | ✅ 可見 | 多徑／背景；正式實驗用配對移除隔離目標貢獻 |
 
-**核心教訓**：UR10e 手臂的 USD mesh 訊號強度遠大於 Cube prim，只要手臂在場景中，Cube 目標的距離信號就被完全掩蓋。
+**核心教訓（請勿過度推廣）**：
+
+- **舊幾何（腕部貼近掛載）**：手臂／夾爪 mesh 常主導或遮蔽前方 Cube 的可用距離峰；  
+  當時「有臂則距離回歸崩壞／R²≈0」的觀察**限定在該掛載**，arm-free 或移臂對照曾用來隔離變因。
+- **V2 正典掛載（腕連桿前伸 0.25 m）**：感測器離開夾爪聲學陰影後，**目標回波可再被偵測**；  
+  D1.5 閉環 r≈0.986、D3 對位等正式結果均在**有 UR10e 的場景**完成。  
+  → 正確表述：「近貼腕載下 mesh 易主導；改前伸掛載後目標貢獻可恢復」，  
+  **不是**「只要場景裡有手臂，Cube 就永遠被完全掩蓋」。
 
 ---
 
@@ -104,30 +132,34 @@ WPM **確實追蹤幾何聲波路徑**，包括 `UsdGeom.Cube` prim。
 
 ---
 
-### 規則 2-4：已確認無效的方法
+### 規則 2-4：已確認無效或不應再盲試的方法
 
-以下方法已經過多次實驗確認無效，**不要重複嘗試**：
+以下在**早期除錯**中已確認無效或低效，**不要在未改幾何前提下去重複空轉**：
 
-| 方法 | 結果 | 實驗次數 |
-|------|------|---------|
-| NonVisualMaterial (A/B/C/D) 條件改變 | 對 Acoustic 無效（對 Lidar/Radar 有效） | 4 次 |
-| 移除天花板/後牆（open_space） | 零效果（byte-for-byte identical） | 1 次 |
-| closeIndirectAmpl=0.1、closeDirectAmpl=30 | 零效果（byte-for-byte identical） | 1 次 |
-| azSpanDeg=45、elSpanDeg=45 | 零效果 | 1 次 |
-| 有 UR10e 手臂的距離回歸 | R² ≈ 0 | 5+ 次 |
+| 方法 | 結果 | 實驗次數 | 備註 |
+|------|------|---------|------|
+| NonVisualMaterial (A/B/C/D) 條件改變 | 對 Acoustic 無效（對 Lidar/Radar 有效） | 4 次 | |
+| 移除天花板/後牆（open_space） | 零效果（byte-for-byte identical） | 1 次 | |
+| closeIndirectAmpl=0.1、closeDirectAmpl=30 | 零效果（byte-for-byte identical） | 1 次 | |
+| azSpanDeg=45、elSpanDeg=45 | 零效果 | 1 次 | 該設定下 |
+| 腕部**貼近**掛載 + 有 UR10e 的距離回歸 | R² ≈ 0 | 5+ 次 | **僅舊掛載**；V2 前伸 0.25 m 後已恢復（見 2-2） |
 
 ---
 
 ## 第三章：實驗設計規則
 
-### 規則 3-1：arm-free 場景設計
+### 規則 3-1：arm-free 場景 vs V2 腕載
 
-無手臂實驗的標準場景：
+**arm-free**（隔離感測物理、早期 S2／校正）：
+
 ```
 感測器：固定於 (0, 0, 0)，TX at (0,0,0)，RX at (mount_spacing, 0, 0)
 目標  ：Cube 沿 +X 軸，中心於 (dist, 0, 0)
 禁止  ：UR10e 或任何 USD Mesh（只保留 Cube 目標）
 ```
+
+**V2 正式閉環（D1.5／D3／D2）**：場景**有** UR10e；感測器掛於腕連桿並**前伸 0.25 m**，  
+再配合配對移除、三臂消融與當輪自校。arm-free 是診斷工具，不是「論文任務必須無手臂」。
 
 ---
 
@@ -239,7 +271,8 @@ def extract_features(gmo) -> dict | None:
 
     return {
         "peak_sample_idx":    float(peak_idx),
-        "inferred_dist_m":    peak_idx * 132.5e-6 * 343.0 / 2.0,
+        # 距離勿用固定 T;V2 用當輪 slope/intercept 校正檔換算
+        # "inferred_dist_m": (peak_idx - intercept) / slope,
         "peak_amplitude":     peak_amp,
         "early_energy":       early_e,
         "ultra_early_energy": ultra_e,
@@ -257,7 +290,7 @@ def extract_features(gmo) -> dict | None:
 | 症狀 | 原因 | 解法 |
 |------|------|------|
 | `peak_sample_idx` 永遠是 0 | 用 `z`（channel ID）當時間軸 | 改用 `numSamplesPerSgw` stride |
-| 所有距離輸出完全相同 | UR10e arm mesh 主導信號 | 移除手臂，arm-free 場景 |
+| 所有距離輸出完全相同／峰不跟目標 | 近貼腕載下 arm mesh 主導，或目標在聲影內 | 先試**前伸掛載**／配對移除；診斷時可用 arm-free 隔離 |
 | `numElements = 0` | 感測器尚未初始化 | warmup 至少 20 frames |
 | 改變幾何無效果 | 之前改的是 Cube/Material，不是 mesh | WPM 對 Cube 有響應，確認場景設定 |
 | `early_energy` 全部很低 | N_EARLY 太小，peak 在 window 外 | 檢查 peak_idx 和 N_EARLY 的關係 |
@@ -269,11 +302,12 @@ def extract_features(gmo) -> dict | None:
 ## 附錄：關鍵數值常數
 
 ```python
-T_US      = 132.5e-6   # 秒/樣本（實驗校正值）
-V_SOUND   = 343.0      # m/s
-N_EARLY   = 20         # early window（約 0.45m 以內）
+# 距離換算：V2 不用固定 T_US；用當輪 slope/intercept 校正檔。
+# 歷史 armfree 曾見 T≈132.5 µs；V2 桌高自校約 103 µs（僅量級參考）。
+V_SOUND   = 343.0      # m/s（空氣，說明用）
+N_EARLY   = 20         # early window（約 0.45m 以內；能量稽核，非主測距）
 N_ULTRA   = 8          # ultra-early window（約 0.18m 以內）
 CLOSE_RANGE_M = 1.42   # WPM 近場模型的距離門檻（schema default）
-CENTER_FREQ_HZ = 40_000.0  # 我們使用的中心頻率
+CENTER_FREQ_HZ = 40_000.0  # 實務對應頻率；引擎不建模頻率物理（見 4.3 證偽）
 MOUNT_SPACING_M = 0.10    # TX-RX 間距
 ```
