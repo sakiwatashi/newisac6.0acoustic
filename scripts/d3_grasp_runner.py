@@ -158,6 +158,40 @@ parser.add_argument(
          "a NEW --output-dir; prior dirs are preserved.",
 )
 parser.add_argument("--smoke", action="store_true")
+parser.add_argument(
+    "--weld-on-stall",
+    action=argparse.BooleanOptionalAction,
+    default=True,
+    help="D-13 default True (canonical D3). D4 Track A may pass --no-weld-on-stall "
+         "to test friction-only lift; use a NEW --output-dir (never overwrite r3).",
+)
+parser.add_argument(
+    "--lift-up-step",
+    type=float,
+    default=None,
+    help="Override LIFT_UP_STEP_M (m per IK ramp). D4 default continuous lift uses 0.002; "
+         "omit to keep D3 rev13 value 0.005.",
+)
+parser.add_argument(
+    "--policy-checkpoint",
+    type=str,
+    default=None,
+    help="D4 same-scene: path to Track-B model_*.pt. When set with --mode closed, "
+         "approach Δx + close stop are driven by the policy; descend/weld/lift unchanged. "
+         "Never use on D3 r3 output dirs.",
+)
+parser.add_argument(
+    "--policy-max-step",
+    type=float,
+    default=0.05,
+    help="Max |Δx| per step (m) when mapping policy action[0] (default 0.05 = B train).",
+)
+parser.add_argument(
+    "--policy-close-slack",
+    type=float,
+    default=0.10,
+    help="Allow policy close when d_horiz_est <= standoff + slack (m).",
+)
 args, _ = parser.parse_known_args()
 
 # ── Constants (scene verbatim from d3_gates_runner; corridor verbatim d15) ────
@@ -288,6 +322,10 @@ LIFT_UP_STEP_M = 0.005         # rev13: LIFT leg step. The arm rides kinematic
                                # coarse steps; the 6 cm bar stalls the fingers
                                # at ~0.38 rad (shallow penetration), so the
                                # lift must move sub-mm per physics step.
+# CLI overrides (D4 Track A friction probe); defaults preserve D3 r3 behavior.
+if getattr(args, "lift_up_step", None) is not None:
+    LIFT_UP_STEP_M = float(args.lift_up_step)
+WELD_ON_STALL = bool(getattr(args, "weld_on_stall", True))
 LIFT_MAX_STEP_RAD = 0.005      # rev13: max_step_rad for the lift-leg ramps
 LIFT_SETTLE_STEPS = 5          # physics steps after each lift IK step
 HOLD_FRAMES = 60
@@ -376,6 +414,20 @@ if args.mode in ("closed", "blind", "open"):
     TARGET_POSITIONS_M = _full[:n_eps]
 else:
     TARGET_POSITIONS_M = None
+
+# D4 same-scene policy (optional). Loaded after SimulationApp / torch available.
+POLICY_CKPT = getattr(args, "policy_checkpoint", None)
+POLICY_MAX_STEP = float(getattr(args, "policy_max_step", 0.05) or 0.05)
+POLICY_CLOSE_SLACK = float(getattr(args, "policy_close_slack", 0.10) or 0.10)
+if POLICY_CKPT and args.mode != "closed":
+    raise SystemExit("ABORT: --policy-checkpoint only supported with --mode closed")
+if POLICY_CKPT:
+    _pol_path = pathlib.Path(POLICY_CKPT)
+    if not _pol_path.is_file():
+        _pol_path = REPO_ROOT / POLICY_CKPT
+    if not _pol_path.is_file():
+        raise SystemExit(f"ABORT: policy checkpoint not found: {POLICY_CKPT}")
+    POLICY_CKPT = str(_pol_path.resolve())
 
 
 # ── SimulationApp before all other Isaac Sim imports (rule 4-1) ───────────────
@@ -1169,7 +1221,13 @@ def _grasp_and_lift(q_stop: np.ndarray, tool0_x_grasp: float, ep_tag: str) -> di
     contact_detected = bool(math.isfinite(finger_q_post_close) and finger_q_post_close < FINGER_STALL_RAD)
     rec["finger_q_post_close"] = finger_q_post_close
     rec["contact_detected"] = contact_detected
-    rec["weld_applied"] = _weld_bar_to_wrist() if contact_detected else False
+    # D3 default: weld-on-stall (D-13). D4 may disable via --no-weld-on-stall.
+    if contact_detected and WELD_ON_STALL:
+        rec["weld_applied"] = _weld_bar_to_wrist()
+    else:
+        rec["weld_applied"] = False
+    rec["weld_on_stall_config"] = bool(WELD_ON_STALL)
+    rec["lift_up_step_m"] = float(LIFT_UP_STEP_M)
 
     if __import__("os").environ.get("D3_DEBUG"):
         try:
@@ -1324,6 +1382,14 @@ else:
     total_posture_violations = 0
     total_sensor_pose_violations = 0
 
+    # Load policy once for closed same-scene runs
+    _policy_actor = None
+    if POLICY_CKPT and args.mode == "closed":
+        from d4_policy_actor import D4PolicyActor  # noqa: WPS433
+        print(f"[policy] loading same-scene actor: {POLICY_CKPT}", flush=True)
+        _policy_actor = D4PolicyActor(POLICY_CKPT, device="cpu")
+        print(f"[policy] ready obs_dim={_policy_actor.obs_dim} iter={_policy_actor.train_iter}", flush=True)
+
     for ep_idx, target_x in enumerate(TARGET_POSITIONS_M):
         _reset_bar(target_x)
         gripper.open(robot, world)
@@ -1387,12 +1453,33 @@ else:
             step_row.update(_joint_row_fields(q))
             ep_step_rows.append(step_row)
         else:
+            from d4_policy_actor import gated_peak_sample_idx, pack_obs8  # noqa: WPS433
+
+            _prev_a0, _prev_a1 = 0.0, 0.0
+            _grip_open_proxy = 1.0
+            _policy = _policy_actor if (POLICY_CKPT and args.mode == "closed") else None
+
             for step_idx in range(args.max_steps):
                 res = _measure_point(N_SETTLE, N_MEASURE)
                 if not res["stationarity_ok"]:
                     n_drift_flagged += 1
-                peak_idx_v = res["peak_sample_idx"]
-                d3d_est, d_horiz_est_real = _estimate_distance(peak_idx_v)
+                # Control distance: classic d3 argmax peak (proven corridor stop).
+                peak_ctrl = res["peak_sample_idx"]
+                d3d_est, d_horiz_est_real = _estimate_distance(peak_ctrl)
+                peak_idx_v = peak_ctrl
+                peak_src = "argmax"
+                peak_pol = float("nan")
+                # Policy obs may use gated peak (B train); never use it alone for stop.
+                if _policy is not None:
+                    gpk, psrc = gated_peak_sample_idx(
+                        res["mean_primary"],
+                        slope=CALIB_SLOPE,
+                        intercept=CALIB_INTERCEPT,
+                        range_lo_m=0.40,
+                        range_hi_m=1.10,
+                    )
+                    peak_pol = gpk
+                    peak_src = f"ctrl_argmax+pol_{psrc}"
                 # law 2: blind forces the USABLE estimate to +inf
                 d_horiz_est = float("inf") if args.mode == "blind" else d_horiz_est_real
 
@@ -1407,6 +1494,36 @@ else:
                     total_sensor_pose_violations += 1
                     ep_valid = False
 
+                a0_log, a1_log = float("nan"), float("nan")
+                if _policy is not None:
+                    # Obs d_hat: prefer gated peak → range; fallback control horiz.
+                    if math.isfinite(peak_pol):
+                        d_hat_obs, _ = _estimate_distance(peak_pol)
+                        peak_for_obs = float(peak_pol)
+                    else:
+                        d_hat_obs = d_horiz_est_real
+                        peak_for_obs = float(peak_ctrl) if math.isfinite(peak_ctrl) else 0.0
+                    if not (math.isfinite(d_hat_obs) and 0.05 <= d_hat_obs <= 3.0):
+                        d_hat_obs = 10.0
+                        gmo_v = 0.0
+                    else:
+                        gmo_v = 1.0
+                    obs8 = pack_obs8(
+                        early_energy=float(res.get("early_energy", 0.0) or 0.0),
+                        peak_sample_idx=peak_for_obs,
+                        gmo_valid=gmo_v,
+                        d_hat_xy=float(d_hat_obs),
+                        gripper_open=_grip_open_proxy,
+                        ee_x=float(sxa) if math.isfinite(sxa) else float(sensor_x),
+                        prev_a0=_prev_a0,
+                        prev_a1=_prev_a1,
+                        blind=False,
+                    )
+                    a0_log, a1_log = _policy.act(obs8)
+                    _prev_a0, _prev_a1 = a0_log, a1_log
+                    if a1_log < -0.1:
+                        _grip_open_proxy = 0.0
+
                 wf_tag = f"ep{ep_idx:03d}_step{step_idx:03d}"
                 np.save(wf_dir / f"{wf_tag}_primary.npy", res["mean_primary"])
                 step_row = {"episode": ep_idx, "step": step_idx, "sensor_x": sensor_x,
@@ -1414,27 +1531,63 @@ else:
                             "d3d_est": d3d_est, "d_horiz_est": d_horiz_est,
                             "oracle_horiz_dist": oracle_horiz_dist, "drift": res["point_drift"],
                             "stationarity_ok": res["stationarity_ok"], "waveform_tag": wf_tag,
-                            "posture_violation": pv, "sensor_pose_violation": sv, "ik_ok": True}
+                            "posture_violation": pv, "sensor_pose_violation": sv, "ik_ok": True,
+                            "policy_a0": a0_log, "policy_a1": a1_log, "peak_src": peak_src}
                 step_row.update(_joint_row_fields(warm_q))
                 ep_step_rows.append(step_row)
                 stop_sensor_x = sensor_x
                 d_horiz_est_stop = d_horiz_est_real  # informational for blind, control for closed
 
-                if d_horiz_est <= args.standoff:
-                    stop_reason = "standoff_est"
-                    break
-                next_x = sensor_x + args.step
-                if next_x > CORRIDOR_GUARD_X_M:
-                    stop_reason = "corridor_end"
-                    break
-                q, ok = _solve_tool0_xz(ik, next_x - args.sensor_offset, TOOL_Z_M, warm_q)
-                if not ok:
-                    stop_reason = "ik_failed"
-                    ep_valid = False
-                    break
-                _move_arm(robot, world, q)   # kinematic only (WPM-validated layer)
-                warm_q = q
-                sensor_x = next_x
+                if _policy is not None:
+                    # Stop uses **control** d_horiz (argmax), same as rule closed arm.
+                    thr_close = float(args.standoff) + POLICY_CLOSE_SLACK
+                    if (
+                        math.isfinite(d_horiz_est)
+                        and d_horiz_est <= thr_close
+                        and a1_log < -0.1
+                    ):
+                        stop_reason = "policy_close"
+                        break
+                    if math.isfinite(d_horiz_est) and d_horiz_est <= args.standoff:
+                        stop_reason = "standoff_est"
+                        break
+                    # a0>0 → arm forward. Far-range floor so domain gap cannot freeze crawl.
+                    delta = float(a0_log) * POLICY_MAX_STEP
+                    far = (not math.isfinite(d_horiz_est)) or (d_horiz_est > args.standoff + 0.08)
+                    if far and delta < 0.5 * float(args.step):
+                        delta = float(args.step)
+                    next_x = sensor_x + delta
+                    if next_x < SENSOR_X_START_M - 1e-6:
+                        next_x = SENSOR_X_START_M
+                    if next_x > CORRIDOR_GUARD_X_M:
+                        stop_reason = "corridor_end"
+                        break
+                    if abs(next_x - sensor_x) < 1e-4:
+                        continue
+                    q, ok = _solve_tool0_xz(ik, next_x - args.sensor_offset, TOOL_Z_M, warm_q)
+                    if not ok:
+                        stop_reason = "ik_failed"
+                        ep_valid = False
+                        break
+                    _move_arm(robot, world, q)
+                    warm_q = q
+                    sensor_x = next_x
+                else:
+                    if d_horiz_est <= args.standoff:
+                        stop_reason = "standoff_est"
+                        break
+                    next_x = sensor_x + args.step
+                    if next_x > CORRIDOR_GUARD_X_M:
+                        stop_reason = "corridor_end"
+                        break
+                    q, ok = _solve_tool0_xz(ik, next_x - args.sensor_offset, TOOL_Z_M, warm_q)
+                    if not ok:
+                        stop_reason = "ik_failed"
+                        ep_valid = False
+                        break
+                    _move_arm(robot, world, q)   # kinematic only (WPM-validated layer)
+                    warm_q = q
+                    sensor_x = next_x
             else:
                 stop_reason = "max_steps"
 
@@ -1443,7 +1596,9 @@ else:
         # ── Terminal advance target (decision D-6/D-7) ──────────────────────
         # closed: predicted bar x = stop sensor x + d̂_horiz at stop (acoustic)
         # blind/open: predicted bar x = fixed nominal (only oracle-free choice)
-        grasp_attempted = stop_reason in ("standoff_est", "corridor_end", "open_fixed", "max_steps")
+        grasp_attempted = stop_reason in (
+            "standoff_est", "corridor_end", "open_fixed", "max_steps", "policy_close",
+        )
         rec: dict = {}
         if grasp_attempted:
             if args.mode == "closed":
@@ -1462,6 +1617,13 @@ else:
                 ep_valid = False
 
         align_error_x = rec.get("align_error_x", float("nan"))
+        lift_ok = bool(rec.get("grasp_lift_success", False))
+        if not ep_valid:
+            sm_final = "FAILED"
+        elif lift_ok:
+            sm_final = "DONE"
+        else:
+            sm_final = "HOLD"  # sequence finished; lift metric failed
         episode_rows.append({
             "episode": ep_idx, "target_x": target_x,
             "stop_sensor_x": stop_sensor_x,
@@ -1473,23 +1635,31 @@ else:
             "align_error_x": align_error_x,
             "aligned": bool(math.isfinite(align_error_x) and abs(align_error_x) <= TOL_ALIGN_X_M),
             "bar_z_gain_m": rec.get("bar_z_gain_m", float("nan")),
-            "grasp_lift_success": bool(rec.get("grasp_lift_success", False)),
+            "grasp_lift_success": lift_ok,
             "advance_ik_ok": rec.get("advance_ik_ok", False),
             "lift_ik_ok": rec.get("lift_ik_ok", False),
             "grasp_pose_peak_idx": rec.get("grasp_pose_peak_idx", float("nan")),
+            "weld_applied": bool(rec.get("weld_applied", False)),
+            "weld_on_stall_config": bool(rec.get("weld_on_stall_config", WELD_ON_STALL)),
+            "contact_detected": bool(rec.get("contact_detected", False)),
+            "lift_up_step_m": float(rec.get("lift_up_step_m", LIFT_UP_STEP_M)),
+            "sm_final_state": sm_final,
+            "policy_control": bool(POLICY_CKPT and args.mode == "closed"),
         })
         print(f"[ep {ep_idx+1:02d}/{len(TARGET_POSITIONS_M)}] mode={args.mode} target_x={target_x:.4f} "
               f"stop={stop_sensor_x:.4f} reason={stop_reason} "
               f"align_err={align_error_x if isinstance(align_error_x, float) else float('nan'):+.4f} "
-              f"lift={episode_rows[-1]['grasp_lift_success']} valid={ep_valid}")
+              f"lift={episode_rows[-1]['grasp_lift_success']} valid={ep_valid}"
+              f"{' policy' if POLICY_CKPT else ''}")
 
     steps_csv_path = out_dir / "steps.csv"
     step_fieldnames = ["episode", "step", "sensor_x", "sensor_x_actual", "peak_idx", "d3d_est",
                        "d_horiz_est", "oracle_horiz_dist", "drift", "stationarity_ok", "waveform_tag",
                        "posture_violation", "sensor_pose_violation", "ik_ok",
+                       "policy_a0", "policy_a1", "peak_src",
                        "q_shoulder_pan", "q_shoulder_lift", "q_elbow", "q_wrist_1", "q_wrist_2", "q_wrist_3"]
     with steps_csv_path.open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=step_fieldnames)
+        w = csv.DictWriter(f, fieldnames=step_fieldnames, extrasaction="ignore")
         w.writeheader()
         w.writerows(step_rows)
 
@@ -1497,9 +1667,11 @@ else:
     episode_fieldnames = ["episode", "target_x", "stop_sensor_x", "d_horiz_est_stop", "n_steps",
                           "reason", "episode_valid", "bar_x_pred", "grasp_center_x_actual",
                           "align_error_x", "aligned", "bar_z_gain_m", "grasp_lift_success",
-                          "advance_ik_ok", "lift_ik_ok", "grasp_pose_peak_idx"]
+                          "advance_ik_ok", "lift_ik_ok", "grasp_pose_peak_idx",
+                          "weld_applied", "weld_on_stall_config", "contact_detected",
+                          "lift_up_step_m", "sm_final_state", "policy_control"]
     with episodes_csv_path.open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=episode_fieldnames)
+        w = csv.DictWriter(f, fieldnames=episode_fieldnames, extrasaction="ignore")
         w.writeheader()
         w.writerows(episode_rows)
 
@@ -1519,6 +1691,8 @@ meta = {
     "n_episodes": len(TARGET_POSITIONS_M) if TARGET_POSITIONS_M is not None else None,
     "acoustic_only": args.mode != "g3",
     "debug_scaffold": args.mode == "g3",
+    "weld_on_stall": bool(WELD_ON_STALL),
+    "lift_up_step_m": float(LIFT_UP_STEP_M),
     "standoff_m": args.standoff,
     "step_m": args.step,
     "max_steps": args.max_steps,
@@ -1546,6 +1720,14 @@ meta = {
     "n_drift_flagged": n_drift_flagged,
     "timestamp": datetime.datetime.now().isoformat(),
     "script": "d3_grasp_runner.py",
+    "policy_checkpoint": POLICY_CKPT,
+    "policy_max_step_m": POLICY_MAX_STEP if POLICY_CKPT else None,
+    "policy_close_slack_m": POLICY_CLOSE_SLACK if POLICY_CKPT else None,
+    "claim_boundary": (
+        "D4 same-scene: B policy drives approach Δx + close stop; "
+        "descend/close/weld/lift = Track A executor. Not pure-reward; not friction-only."
+        if POLICY_CKPT else None
+    ),
 }
 with (out_dir / "meta.json").open("w") as f:
     json.dump(meta, f, indent=2)

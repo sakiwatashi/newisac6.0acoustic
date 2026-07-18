@@ -39,7 +39,11 @@ from geometry_passport_v1 import (
     set_prim_visibility,
     tcp_radius_xy,
 )
-from rtx_acoustic_factory import create_passport_acoustic, summarize_gmo_frame
+from rtx_acoustic_factory import (  # noqa: E402
+    create_passport_acoustic,
+    extract_primary_raw_amplitudes,
+    summarize_gmo_frame,
+)
 from rtx_material_passport_v1 import apply_room_and_target_materials
 
 LAB_EXPERIMENT_MODE = "fixed_tcp_moving_target_dynamic"
@@ -129,6 +133,8 @@ class GmoWriterState:
     parse_errors: list[str] = field(default_factory=list)
     raw_empty_frames: int = 0
     last_gmo_fields: dict[str, Any] | None = None
+    # Raw primary-way amplitudes for gated ToF peak (D4 grasp / ranging).
+    last_primary_amps: Any | None = None
     captured_this_step: bool = False
 
 
@@ -168,6 +174,10 @@ def make_gmo_writer_class(writer_state: GmoWriterState, np: Any):
                     continue
                 gmo_fields = summarize_gmo_frame(gmo, np)
                 writer_state.last_gmo_fields = gmo_fields
+                try:
+                    writer_state.last_primary_amps = extract_primary_raw_amplitudes(gmo, np)
+                except Exception:
+                    writer_state.last_primary_amps = None
                 writer_state.captured_this_step = True
                 if pending is not None:
                     pending["captured"] = True

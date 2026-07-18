@@ -1,8 +1,46 @@
-# 專案交接文件(現況版,2026-07-15 更新)— 給任何接手的 AI/人
+# 專案交接文件(現況版,2026-07-18 更新)— 給任何接手的 AI/人
 
 > 讀我就夠開工。歷史細節按需往下挖,不必預讀。
 > 舊版交接(`docs/plan_v2/V2_HANDOFF_FOR_NEXT_AI.md`)是 7/8 開工前的計畫書,僅供考古。
 
+
+## 2026-07-18 交接增量（D4 雙軌收束 + 報告）
+
+### 完成
+1. **Track A 正式三臂** `v2_d4_sm_grasp_n30/`：closed 對位 **73%** vs blind **40%**，r=0.976，Fisher p≈0.009；weld 升舉；**無 weld g0 FAIL**。
+2. **Track B 正典** `v2_d4_ppo_grasp_acoustic_close_ft/model_49.pt`：8-D 聲學 obs、true scaffold reward；eval true success **100%**。
+3. **消融**：② BLIND+true → 也 100%（開環可過）；③ pure d_hat reward → true **0%**（假近）。
+4. **④ SM 掛接**：`bash lab/run_d4_sm_policy_hookup.sh` → LIFT_HANDOFF **100%**；物理 lift 仍 A。
+5. **報告**：`docs/plan_v2/reports/D4_sm_grasp_report.md`
+
+### 宣稱上限
+- 可：聲學對位贏盲走；B 學接近+合爪（obs 無 xyz）；協議 handoff；weld 升舉分欄。
+- 不可：pure-reward 成功、必須聽音、摩擦-only 升舉、handoff×lift 當未跑 e2e。
+
+### 同場景 n=90（完成）
+- `runtime/outputs/v2_d4_same_scene_policy_n90/`：對位 **76.7%**、升舉 **74.4%**、P(lift|align) **76.8%**
+- 報告：`docs/plan_v2/reports/D4_sm_grasp_report.md` §5.4
+- **論文 §5.3 增補草稿**：`thesis/THESIS_CH5_3_D4_SUPPLEMENT_DRAFT.md`（待貼入 docx）
+
+### 下一步（可選）
+1. 將 §5.3 草稿貼入 `THESIS_DRAFT_FCU_v2.docx`  
+2. 修 d_hat 再試 pure reward（非必須）  
+
+### 禁止
+- 覆寫 `v2_d3_grasp_r3`
+- 宣稱 B 為物理摩擦夾取或官方 Franka lift 復現
+
+---
+
+## 2026-07-16 交接增量（D4 雙軌 + 訓練開工）— 考古
+
+### 當時完成
+1. Track A n30 + B PPO 短訓骨架。
+2. 誠實邊界：B ≠ 摩擦夾取 / ≠ D3 r3 替代。
+
+### 當時已知問題（已在後續修復）
+- d_hat 卡死 → gated sample-index peak 已修；見 D4 報告 §3.3。
+---
 
 ## 2026-07-15 交接增量（文獻×數學詳版 + Nosek PDF）
 
@@ -31,7 +69,7 @@
 ## 一句話:這專案是什麼、現在在哪
 
 逢甲電聲碩士論文(指導教授蔡鈺鼎):在 Isaac Sim 6.0 RTX Acoustic 模擬中,驗證「純超聲回授引導 UR10e 機械手臂接近、二維定位並夾取隨機目標」。
-**現況:八個實驗全部完成、判準全綠;論文(6 章 29 節)與實驗完全同步且經嚴格自審修正;口試 Q&A 備妥;GUI 展示可跑;一鍵驗證可過。實驗側是完成式,現階段主軸=口試準備與教授對齊。**
+**現況:八個實驗全部完成、判準全綠;論文與實驗同步;口試 Q&A 備妥。另已開工 D4 雙軌(聲學規則對位+連續夾取狀態機 / 聲學 PPO 骨架),正典 D3 r3 不動。主軸=口試準備 + D4 g0/GPU 冒煙。**
 
 ## 7/12 晚間新增(嚴格自審輪+三個零/低成本延伸,細節見 PROGRESS 最後三節)
 
