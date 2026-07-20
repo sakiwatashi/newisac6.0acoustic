@@ -64,7 +64,7 @@ def default_wpm_attributes(
         Set to 45° to approximate CH201 ±22.5° directional beam.
     trace_tree_depth: max ray bounces (default 2). Set to 1 for direct-echo only.
 
-    Parametric room model (WPM does NOT ray-trace Cube prims):
+    Legacy note: early misconception. WPM DOES interact with Cube geometry; old wrist-close mounts were mesh-shadowed (see docs/WPM_EXPERIMENT_RULES.md):
       close_indirect_ampl: indirect (room) echo amplitude multiplier. Schema default 17.64.
           Set near 0 to suppress parametric room echoes and let direct echo dominate.
       close_direct_ampl: direct echo amplitude multiplier. Schema default 12.66.

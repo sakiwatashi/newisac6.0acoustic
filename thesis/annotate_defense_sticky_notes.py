@@ -104,7 +104,7 @@ NOTES: list[tuple[str, str, str]] = [
         "1.1",
         "「最後一公尺」（last-meter）",
         "【口試・白話】目標大概已經進工作區了，還差最後一小段要靠距離回饋慢慢靠近。"
-        "不是全場亂逛找東西。相機粗定位 + 超音波精接近＝互補，不是取代相機。",
+        "並非全域搜尋。相機粗定位 + 超音波精接近＝互補，不是取代相機。",
     ),
     (
         "1.1",
@@ -146,27 +146,27 @@ NOTES: list[tuple[str, str, str]] = [
     (
         "1.3",
         "先感測、再控制、再擴維、再夾取",
-        "【口試・白話】整條研究像蓋樓：先確認「聽不聽得到」（S1/S2），"
+        "【口試・白話】研究層次可理解為：先確認「聽不聽得到」（S1/S2），"
         "再證明「聽覺能帶路」（D1/D1.5），再補「左右定位」（D2），最後才「對準夾起」（D3/D4）。"
         "第五章章節順序是寫作安排；邏輯順序以 1.3 這句為準。",
     ),
     (
         "1.3",
         "D1：感測器尚未掛上手臂",
-        "【口試・白話】先不要手臂干擾，只問：估距對不對、會不會停。"
+        "【口試・白話】先排除手臂運動學，只檢驗：估距對不對、會不會停。"
         "通過後才掛上 UR10e 做 D1.5（主結果）。",
     ),
     (
         "1.3",
         "D2：單次輸出左右資訊不足時",
-        "【口試・白話】一次聽看不出左右 → 手臂側移量幾次距離，用幾何交會估平面位置。"
+        "【口試・白話】單次量測難以分辨左右；手臂側移量幾次距離，用幾何交會估平面位置。"
         "已做定位與二維接近；「定位完再夾」還沒宣稱（左右誤差仍偏大）。",
     ),
     (
         "1.3",
-        "不在本文宣稱範圍者，併入限制說明",
+        "不在本文宣稱範圍者併入限制說明",
         "【口試・白話】這段不是否定成果，是先講清楚「論文不包什麼」："
-        "沒上真機探頭、不吹摩擦抓牢、還沒多 seed 統計。"
+        "不含實機探頭對照、不宣稱摩擦抓牢、尚未完成多 seed 統計。"
         "比單獨開一長段「排除項目」好讀，重點仍在限制句。",
     ),
     (
@@ -1156,9 +1156,21 @@ def apply(docx_path: Path, work: Path) -> list[tuple[int, str, str, str]]:
     results: list[tuple[int, str, str, str]] = []
     failures: list[str] = []
 
+    def _is_toc(p: ET.Element) -> bool:
+        pPr = p.find(qn("w:pPr"))
+        if pPr is None:
+            return False
+        ps = pPr.find(qn("w:pStyle"))
+        if ps is None:
+            return False
+        val = ps.get(qn("w:val")) or ""
+        return val.upper().startswith("TOC")
+
     for cid, (chapter, anchor, note) in enumerate(NOTES):
         target_p = None
         for p in paragraphs:
+            if _is_toc(p):
+                continue
             if anchor in para_text(p):
                 target_p = p
                 break
