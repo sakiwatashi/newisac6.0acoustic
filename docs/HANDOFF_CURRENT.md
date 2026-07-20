@@ -1,7 +1,30 @@
-# 專案交接文件(現況版,2026-07-18 更新)— 給任何接手的 AI/人
+# 專案交接文件(現況版,2026-07-20 更新)— 給任何接手的 AI/人
 
 > 讀我就夠開工。歷史細節按需往下挖,不必預讀。
 > 舊版交接(`docs/plan_v2/V2_HANDOFF_FOR_NEXT_AI.md`)是 7/8 開工前的計畫書,僅供考古。
+> **公開 git remote：** `newisac` → `https://github.com/sakiwatashi/newisac6.0acoustic.git`  
+> **論文 docx 以本機為準**（預設不隨 push）；**`.pt` 權重不進 git**。
+
+
+## 2026-07-20 交接增量（GUI 平行入口 + README 對齊 + 本機論文資產）
+
+### 完成（程式／文件 → 應進 git；論文 docx → 本機）
+1. **GUI 平行入口（不覆寫 headless 原檔）**
+   - `scripts/gui_formal_exec.py`：headless→開窗、fixed dt、render、Camera Light、開始前 10s／結束後 15s
+   - `runtime/run_v2_*_gui.sh`、`lab/run_d4_*_gui.sh`、`scripts/d4_acoustic_grasp_sm_runner_gui.py`
+   - 說明：`docs/plan_v2/GUI_EXPERIMENT_COMMANDS.md`
+2. **示意圖產線**：`thesis/figures/gen_schematic_figures.py` + `thesis/figures/schematic/*.png`
+3. **插入表／圖工具**：`thesis/insert_tables_and_schematics.py`（本機 docx 已插入表 3.1/3.2 與示意圖）
+4. **口試便利貼腳本**：`thesis/annotate_defense_sticky_notes.py` + 索引 md
+5. **README.md** 改寫為 V2 S1–D4 正典導覽（淘汰 7/1 Physical AI 舊入口為主敘事）
+
+### 本機論文（不預設 push）
+- `thesis/THESIS_DRAFT_FCU_v2.docx`：頁首題名、1.3 邏輯順序、表／示意圖、便利貼等
+- 備份多份 `*.bak_*` 在本機
+
+### 宣稱／禁止（不變）
+- 正典對位：**D3 r3**；D4 為延伸
+- 禁止覆寫 `v2_d3_grasp_r3`；禁止摩擦夾持／pure-reward e2e 宣稱
 
 
 ## 2026-07-18 交接增量（D4 雙軌收束 + 報告）

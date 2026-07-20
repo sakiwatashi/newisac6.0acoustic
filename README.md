@@ -1,22 +1,47 @@
-# UR10 RTX Acoustic Thesis — Isaac Sim Pipeline
+# Isaac Sim 6.0 · RTX Acoustic · UR10e 聲學回授研究管線（V2 正典）
 
 **逢甲大學 · 電聲碩士學位學程**  
-碩士論文：基於 RTX Acoustic 超音波感測之機械手臂閉迴路接近控制與 Physical AI 狀態判斷  
-指導教授：蔡鈺鼎 教授
+指導教授：蔡鈺鼎 教授 · 研究生：宋思遠  
+
+**論文題旨（現用）：** Isaac Sim 機械手臂超音波感測回授接近之模擬驗證  
+（包絡優先 → 三臂消融閉環 → 對位夾取 → D4 雙軌延伸）
+
+**定位：** 模擬內**可行性 + 實驗效度**管線，**非**部署級測距、**非**物理摩擦夾持已驗證、**非** CH201 波形等價。
+
+**Git 追蹤 remote（本機 `main`）：** `newisac` →  
+`https://github.com/sakiwatashi/newisac6.0acoustic.git`  
+
+> 論文 Word（`thesis/THESIS_DRAFT_FCU_v2.docx`）以本機為準，**預設不隨日常 push 更新公開 repo**。  
+> 訓練權重 `runtime/outputs/**/model_*.pt` **不進 git**（見 `.gitignore`）。
 
 ---
 
-## 這個 repo 是什麼？
+## 現況一句話（2026-07-20）
 
-可重現、可審計的 **Isaac Sim** 研究管線，用於驗證：
+| 階段 | 狀態 |
+|------|------|
+| V2 主線 S1→S2→D1→D1.5→D2→D3（r3 正典） | **完成、判準全綠（本機 canon 數據）** |
+| D4 Track A 狀態機三臂 + weld 邊界 | **完成** |
+| D4 Track B PPO + 消融 + SM hookup | **完成（權重本機）** |
+| D4 同場景策略串聯 n=90 | **完成** |
+| GUI 平行入口（不覆寫 headless） | **程式已就緒** |
+| README 對齊 V2／D4 | **本檔** |
 
-- **Phase A：** 固定 TCP 下 RTX Acoustic **signal-way** 特徵能否可重複、具距離趨勢
-- **Phase B/C：** 閉環超聲特徵能否驅動機器人接近至目標區域（不將目標世界座標餵給控制器）
-- **Physical AI：** 隨機化幾何下，離線狀態估計是否含可測量的聲學信號
+---
 
-**定位：** simulation-based feasibility pipeline（可行性 + 可審計），**非**部署級測距、穩定夾取或波形級數位雙生。
+## 研究邏輯順序（勿與第五章寫作順序混淆）
 
-**權威敘事（2026-07-01）：** [`thesis/PHYSICAL_AI_ACOUSTIC_GRASP_SUMMARY_2026-07-01.md`](thesis/PHYSICAL_AI_ACOUSTIC_GRASP_SUMMARY_2026-07-01.md)
+```text
+S1 感測包絡（52 條件格點，非地板地磚）
+ → S2 距離編碼／datasheet
+ → D1 未掛臂閉環三臂
+ → D1.5 腕載 UR10e 三臂（接近主結果 r≈0.9856）
+ → D2 五視點多點定位 + 二維閉環
+ → D3 對位夾取 + 接觸觸發附著升舉（正典 r3：對位 80% vs 盲 33%）
+ → D4 執行器／摩擦負結果／PPO／同場景串聯（不取代 r3）
+```
+
+第五章正文為敘事可先寫 D3 再寫 D2；**邏輯順序以上表為準**。
 
 ---
 
@@ -24,137 +49,117 @@
 
 | 路徑 | 內容 |
 |------|------|
-| [`thesis/PHYSICAL_AI_ACOUSTIC_GRASP_SUMMARY_2026-07-01.md`](thesis/PHYSICAL_AI_ACOUSTIC_GRASP_SUMMARY_2026-07-01.md) | **最新實證結論與 claim boundary** |
-| [`thesis/THESIS_OUTLINE_FCU_2026-06-30.md`](thesis/THESIS_OUTLINE_FCU_2026-06-30.md) | 論文大綱（六章 · 閉環 + Physical AI） |
-| [`thesis/THESIS_REFRAME_PLAN_2026-06-30.md`](thesis/THESIS_REFRAME_PLAN_2026-06-30.md) | 敘事重構規劃（刪 PRA 主線） |
-| [`thesis/THESIS_DRAFT_FCU_v1.docx`](thesis/THESIS_DRAFT_FCU_v1.docx) | 論文 Word 初稿（待對齊 7/1 重跑） |
-| [`thesis/REPLICATION_PACKAGE.md`](thesis/REPLICATION_PACKAGE.md) | 口試重現步驟 |
-| [`REPRODUCIBILITY_AUDIT.md`](REPRODUCIBILITY_AUDIT.md) | Phase A/B/C 可審計協定 |
-| [`DATA_MANIFEST.md`](DATA_MANIFEST.md) | Raw / canonical 資料契約 |
-| [`scripts/`](scripts/) | Passport、RTX factory、閉環接近、Physical AI |
-| [`lab/`](lab/) | Isaac Lab 延伸（附錄，非主貢獻） |
-| [`runtime/outputs/`](runtime/outputs/) | 實驗結果 |
+| [`docs/HANDOFF_CURRENT.md`](docs/HANDOFF_CURRENT.md) | **最新交接（先讀）** |
+| [`docs/plan_v2/reports/`](docs/plan_v2/reports/) | 各實驗正式報告 |
+| [`docs/plan_v2/METHOD_LITERATURE_MAP.md`](docs/plan_v2/METHOD_LITERATURE_MAP.md) | 方法↔文獻一頁表 |
+| [`docs/plan_v2/EXPERIMENT_MATH_LITERATURE_GROUNDING.md`](docs/plan_v2/EXPERIMENT_MATH_LITERATURE_GROUNDING.md) | 公式×文獻詳版 |
+| [`docs/plan_v2/DEFENSE_QA_PREP.md`](docs/plan_v2/DEFENSE_QA_PREP.md) | 口試 Q&A |
+| [`docs/plan_v2/GUI_EXPERIMENT_COMMANDS.md`](docs/plan_v2/GUI_EXPERIMENT_COMMANDS.md) | **GUI 指令對照** |
+| [`docs/WPM_EXPERIMENT_RULES.md`](docs/WPM_EXPERIMENT_RULES.md) | GMO／WPM 工程鐵律 |
+| [`runtime/run_v2_*.sh`](runtime/) | **Headless 正式實驗入口** |
+| [`runtime/run_v2_*_gui.sh`](runtime/) | **GUI 平行入口（smoke 預設）** |
+| [`scripts/gui_formal_exec.py`](scripts/gui_formal_exec.py) | 正式 runner → GUI 轉寫啟動器 |
+| [`lab/run_d4_*.sh`](lab/) | D4 PPO 訓練／評估／hookup |
+| [`scripts/demo_gui_showcase.py`](scripts/demo_gui_showcase.py) | 已驗證 GUI 展示（非裁決） |
+| [`thesis/`](thesis/) | 論文資產（docx 以本機為準） |
 
 ---
 
-## 環境需求（本機）
+## 環境
 
-此 repo **不含** Isaac Sim 安裝包（`app/`）與 Isaac Lab 上游 clone，需在本機 DGX 預先安裝：
-
-- Isaac Sim **6.0.0-rc.59** host standalone（路徑慣例：`/home/lab109/song/isaacsim6.0/app`）
-- Isaac Lab（`IsaacLab/`，符號連結至 `_isaac_sim`）— 僅附錄實驗需要
-- NVIDIA GPU + RTX Acoustic experimental 延伸
+- Isaac Sim **6.0.0-rc.59** host（`app/` 不進 repo）
+- GPU + RTX Acoustic（`isaacsim.sensors.experimental.rtx`）
+- Experience：`${APP_ROOT}/apps/isaacsim.exp.base.python.kit`
 
 ```bash
-cd /home/lab109/song/isaacsim6.0   # 或你的 clone 路徑
+cd /path/to/isaacsim6.0
 source scripts/env_host_isolated.sh
 ```
 
-Experience（RTX 必用）：
+---
 
-```text
-${APP_ROOT}/apps/isaacsim.exp.base.python.kit
+## Headless 正式入口（裁決用）
+
+```bash
+# 感測
+bash runtime/run_v2_s1_envelope.sh          # S1 包絡 52 cells
+bash runtime/run_v2_s2_datasheet.sh         # S2 datasheet
+
+# 閉環接近
+bash runtime/run_v2_d1_approach.sh          # D1 未掛臂
+bash runtime/run_v2_d15_arm_approach.sh     # D1.5 腕載主結果
+bash runtime/run_v2_d2v2_formal.sh          # D2 三臂
+
+# 閘門與夾取
+bash runtime/run_v2_d3_gates.sh             # D3.0 gates
+bash runtime/run_v2_d3_grasp.sh             # D3 夾取（正典目錄勿覆寫 r3）
+
+# D4
+bash runtime/run_v2_d4_sm_grasp.sh          # Track A SM
+bash lab/run_d4_ppo_train.sh                # Track B 訓練（權重落本機 outputs）
+bash lab/run_d4_ppo_eval.sh                 # Track B 評估
+bash runtime/run_v2_d4_same_scene_policy.sh # 同場景 n=90
+bash lab/run_d4_sm_policy_hookup.sh         # SM 掛接
 ```
+
+**禁止覆寫：** `runtime/outputs/v2_d3_grasp_r3`（及正式 n30 正典目錄）。
 
 ---
 
-## 重現主結果（建議順序）
+## GUI 平行入口（展示／錄影；預設 smoke）
 
-### 1. Phase A — 30/30 特徵可重複性（論文地基）
-
-```bash
-bash scripts/run_phase3_repeatability_and_analysis.sh
-```
-
-| 層級 | 路徑 | 進 git？ |
-|------|------|----------|
-| Raw repeat（6×5 runs） | `runtime/outputs/fixed_tcp_repeatability_v1/` | ❌ |
-| Feature extract | `runtime/outputs/phase3_rtx_features/fixed_tcp_repeatability_v1_distance_features.csv` | ❌ |
-| Canonical RTX 摘要 | `runtime/outputs/phase3_rtx_pra_comparison_fixed_tcp_repeatability_v1/` | ✅ |
-
-### 2. Phase B/C — 閉環接近 smoke（單次 trial）
+不修改 headless 原檔；經 `scripts/gui_formal_exec.py` 開窗、補光、開始前約 10 s／結束後約 15 s。
 
 ```bash
-# 閉環接近（不含夾取）
-bash scripts/run_host_ultrasonic_closed_loop_approach_smoke.sh
+bash runtime/run_v2_s1_envelope_gui.sh
+bash runtime/run_v2_d15_arm_approach_gui.sh
+bash runtime/run_v2_d3_grasp_gui.sh
+# 完整對照見 docs/plan_v2/GUI_EXPERIMENT_COMMANDS.md
 
-# 閉環接近 + Tier B contact-only 夾取
-bash scripts/run_host_ultrasonic_closed_loop_grasp_smoke.sh
-
-# Open-loop 對照
-bash scripts/run_host_open_loop_grasp_baseline_smoke.sh
+# 展示 demo（非正式裁決）
+./app/python.sh scripts/demo_gui_showcase.py
 ```
 
-### 3. Phase B/C + Physical AI — 隨機化批次（論文主貢獻數據）
-
-**Canonical 已產出資料集（建議口試直接引用）：**
-
-```text
-runtime/outputs/physical_ai_v9_skip_lift_clean/
-runtime/outputs/physical_ai_v9_skip_lift_clean_ablation/feature_ablation_summary.csv
-```
-
-**僅重跑離線分析（不需重開 Isaac Sim）：**
-
-```bash
-python3 scripts/run_physical_ai_v8_randomized_pipeline.py \
-  --batch-id physical_ai_v9_skip_lift_clean \
-  --skip-batch
-```
-
-**完整重跑隨機化批次（耗時，需 GPU）：**
-
-```bash
-python3 scripts/run_physical_ai_v8_randomized_pipeline.py \
-  --batch-id physical_ai_v9_skip_lift_clean \
-  --config-count 8 --trials-per-config 6
-```
-
-> 重跑時請確認 wrapper 傳入 `--skip-lift`（contact-only，`FixedCuboid`），避免 PhysX lift 污染資料集。詳見 7/1 summary §3.1。
-
-### 4. Isaac Lab 延伸（附錄，非主貢獻）
-
-```bash
-bash lab/run_lab_smoke.sh              # 動態觀測
-bash lab/run_sl_lab_distance.sh        # Sim→Lab 監督學習
-bash lab/run_rl_distance_in_sim_long_v5.sh   # in-sim RL
-```
+`FORMAL=1` 可跑與 headless 同規模（很慢）。S1 GUI 場景幾乎只有感測器+小方塊屬正常。
 
 ---
 
-## 論文 Word 重建
+## 宣稱邊界（摘要）
 
-```bash
-cd thesis
-python3 generate_thesis_figures.py
-python3 generate_fig31.py
-python3 rebuild_thesis_six_chapters.py   # 待對齊 7/1 大綱後重跑
-```
+| 可支持 | 不支持 |
+|--------|--------|
+| 包絡內純聲學 1D 閉環；盲走失能 | 厘米級實機部署測距 |
+| D3 r3 聲學對位優於盲走 | 物理摩擦夾持已驗證 |
+| 接觸觸發附著後升舉（分層報） | 對位×升舉合成假 e2e 總成功率 |
+| D2 合成側向定位（誤差仍＞夾取窗） | 二維定位後再夾取已完成 |
+| D4 同場景串聯接口（約 77%／74%） | pure d̂ 獎勵 end-to-end 成功 |
+| 效度框架（三臂／預註冊／稽核） | 「必須聽音」全稱命題（Lab 消融） |
 
-輸出：`thesis/THESIS_DRAFT_FCU_v1.docx`
-
----
-
-## 主要結論（claim boundary · 2026-07-01）
-
-| 可宣稱 | 不可宣稱 |
-|--------|----------|
-| Phase A：30/30 PASS；`primary_sgw_early_energy` 距離趨勢 ρ≈−0.66 (n=6) | 厘米級部署測距 |
-| 閉環接近 ≤0.45 m：**84.0%** vs open-loop **29.2%**（v9, n=25/24） | 穩定端到端超聲夾取 |
-| 閉環 near ≤0.35 m：**84.0%** vs open-loop **4.2%** | 優於 VLM 全任務管線 |
-| acoustic_only `stop_region` F1≈**0.598**（隨機化 Sim） | 可部署的學習控制器 |
-| Tier B contact-only 示範與明確階段化評估 | 波形等價、CH201 實機已驗證 |
-
-**最終夾取成功率約 20%（closed-loop 與 open-loop 相近）→ 應歸因於下游 PhysX 接觸/夾爪整合，非聲學接近失敗。**
+細節：`docs/plan_v2/reports/`、論文 §6.2（本機 docx）。
 
 ---
 
-## 授權與引用
+## 本機 canon 數據（多半 gitignore）
 
-學術用途請引用本 repo 與論文初稿。Isaac Sim／Isaac Lab 為 NVIDIA 產品，使用須遵守其授權條款。
+| 內容 | 典型路徑 |
+|------|----------|
+| D3 正典 | `runtime/outputs/v2_d3_grasp_r3/` |
+| D4 SM n30 | `runtime/outputs/v2_d4_sm_grasp_n30/` 等 |
+| D4 PPO 權重 | `.../v2_d4_ppo_grasp_acoustic_close_ft/rsl_rl_logs/model_49.pt` |
+| 同場景 n90 | `runtime/outputs/v2_d4_same_scene_policy_n90/` |
+
+**Clone 後不會自動有 `.pt` 與完整 outputs**——需本機訓練或拷貝。
 
 ---
 
-## 聯絡
+## 舊管線（考古，非 V2 正典入口）
 
-GitHub: [@sakiwatashi](https://github.com/sakiwatashi)
+`physical_ai_v9_*`、`run_host_ultrasonic_closed_loop_*`、Phase A fixed_tcp 等仍可能在 repo／磁碟，**論文主宣稱以 V2 `run_v2_*` 與 D3 r3／D4 報告為準**。
+
+---
+
+## 授權
+
+學術用途請依學校與指導教授規範引用。Isaac Sim／Isaac Lab 為 NVIDIA 產品，遵守其授權。
+
+GitHub: [@sakiwatashi](https://github.com/sakiwatashi) · 主 remote：`newisac6.0acoustic`
