@@ -63,13 +63,22 @@ def _load_points(csv_path: pathlib.Path) -> list[dict]:
         return list(csv.DictReader(f))
 
 
+def _peak_signed(wf: np.ndarray) -> tuple[int, float]:
+    """Canon V2 rule: np.argmax(wf) on signed amplitudes (s2_datasheet_runner)."""
+    a = np.asarray(wf, dtype=float)
+    if a.size == 0:
+        return -1, float("nan")
+    i = int(np.argmax(a))
+    return i, float(a[i])
+
+
 def _peak_abs(wf: np.ndarray) -> tuple[int, float]:
+    """Contrast only; equivalent on non-negative S1/S2 canon waveforms."""
     a = np.asarray(wf, dtype=float)
     if a.size == 0:
         return -1, float("nan")
     i = int(np.argmax(np.abs(a)))
     return i, float(np.abs(a[i]))
-
 
 def audit_s1_block_a(s1_root: pathlib.Path) -> dict:
     """Horizontal pitch=0 cells: peak moves with distance; without-target does not."""
@@ -138,17 +147,16 @@ def audit_s2_distance(s2_root: pathlib.Path) -> dict:
         if not (p0.exists() and p1p.exists()):
             continue
         a0, a1 = np.load(p0), np.load(p1p)
-        i0, m0 = _peak_abs(a0)
-        i1, m1 = _peak_abs(a1)
+        i0, m0 = _peak_signed(a0)
+        i1, m1 = _peak_signed(a1)
         corr = float(np.corrcoef(a0, a1)[0, 1]) if a0.size == a1.size and a0.size > 2 else float("nan")
         dual.append(
             {
                 "tag": tag,
                 "rx0_peak_idx": i0,
                 "rx1_peak_idx": i1,
-                "rx0_peak_abs": m0,
-                "rx1_peak_abs": m1,
-                "corr": corr,
+                "rx0_peak_val": m0,
+                "rx1_peak_val": m1,                "corr": corr,
                 "identical": bool(np.allclose(a0, a1)),
                 "n_samples": int(a0.size),
             }
@@ -229,16 +237,15 @@ def make_figures(
         wo = np.load(cell / "without.npy")
         fig, axes = plt.subplots(2, 1, figsize=(7.0, 5.0), sharex=True)
         axes[0].plot(w, lw=0.9)
-        i, _ = _peak_abs(w)
-        axes[0].axvline(i, color="C3", ls="--", label=f"|max| @ {i}")
+        i, _ = _peak_signed(w)
+        axes[0].axvline(i, color="C3", ls="--", label=f"argmax (signed) @ {i}")
         axes[0].set_ylabel("amplitude")
         axes[0].set_title("S1 A_d0.5_z0.10: WITH target (primary way mean)")
         axes[0].legend()
         axes[0].grid(True, alpha=0.3)
         axes[1].plot(wo, lw=0.9, color="C1")
-        i2, _ = _peak_abs(wo)
-        axes[1].axvline(i2, color="C3", ls="--", label=f"|max| @ {i2}")
-        axes[1].set_xlabel("sample index within signal way")
+        i2, _ = _peak_signed(wo)
+        axes[1].axvline(i2, color="C3", ls="--", label=f"argmax (signed) @ {i2}")        axes[1].set_xlabel("sample index within signal way")
         axes[1].set_ylabel("amplitude")
         axes[1].set_title("WITHOUT target")
         axes[1].legend()
@@ -291,9 +298,8 @@ def make_figures(
         fig, axes = plt.subplots(2, 1, figsize=(7.0, 5.0), sharex=True)
         for ax, a, name in [(axes[0], a0, "way ordinal 0 (rx0)"), (axes[1], a1, "way ordinal 1 (rx1)")]:
             ax.plot(a, lw=0.9)
-            i, _ = _peak_abs(a)
-            ax.axvline(i, color="C3", ls="--", label=f"|max| @ {i}")
-            ax.set_ylabel("amplitude")
+            i, _ = _peak_signed(a)
+            ax.axvline(i, color="C3", ls="--", label=f"argmax (signed) @ {i}")            ax.set_ylabel("amplitude")
             ax.set_title(f"S2 {tag}: {name} — separate ways (NOT time-concatenated)")
             ax.legend()
             ax.grid(True, alpha=0.3)

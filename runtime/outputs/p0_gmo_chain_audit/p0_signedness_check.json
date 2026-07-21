@@ -1,0 +1,35 @@
+{
+  "rule_in_code": {
+    "peak_idx": "np.argmax(wf)  # signed maximum sample index",
+    "primary_way": "way with larger np.max(wf)  # signed max, not abs",
+    "early_energy": "sum of squares or abs depending on script \u2014 S2 uses sum(wf[:N]**2) see code"
+  },
+  "s2_waveforms": {
+    "n_arrays": 180,
+    "n_signed_eq_abs_peak_idx": 180,
+    "n_mismatch_peak_idx": 0,
+    "primary_csv_matches_signed_argmax": 60,
+    "n_primary": 60,
+    "arrays_with_any_negative": 0,
+    "max_neg_frac": 0.0,
+    "min_over_all": 0.7006591831644376,
+    "max_over_all": 111.64296785990396
+  },
+  "s1_blockA_p0": {
+    "n": 45,
+    "n_signed_eq_abs": 45,
+    "mismatches": []
+  },
+  "primary_selection_p1": {
+    "n": 20,
+    "n_signed_eq_abs_rule": 20,
+    "mismatches": []
+  },
+  "adjudication": {
+    "code_uses_signed_argmax": true,
+    "abs_equivalent_on_s2_canon_waveforms": true,
+    "csv_consistent_with_signed": true,
+    "primary_select_signed_eq_abs_on_p1": true,
+    "paper_should_say": "peak index = argmax of signed amplitude (not |\u00b7|); on V2 S1/S2 canon data all samples non-negative so |\u00b7| coincides; primary = larger signed max of the two ways"
+  }
+}

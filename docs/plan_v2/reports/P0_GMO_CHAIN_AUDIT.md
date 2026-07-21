@@ -12,8 +12,9 @@
 
 在本 repo 的 Isaac Sim 6.0 RTX Acoustic 配置下，GMO 的 `scalar` 是 **signal way（TX→RX→channel）上的離散振幅序列**，時間格對應引擎 **`sampleDuration`（schema 預設 102.4 µs）**，不是 40 kHz 載波 ADC 流。V2 正典 **不串接** 多條 way，而是切開後取 **primary（峰較高者）**；峰值索引 \(k\) 在 S1 隨目標出現／距離移動，移除目標後不再同軌；S2 上 \(k\) 與真距 OLS \(r\approx 0.9994\)，斜率與 \(2/(c\cdot T_{\mathrm{schema}})\) 相對差 **&lt;1%**。閉環距離使用 **經驗映射** \(\hat d=(k-b)/a\)，不以裸 \(c\Delta t/2\) 當物理真值。
 
-**離線閘門**: `all_offline_gates_pass: true`（見 `metrics.json`）。
-
+**離線閘門**: `all_offline_gates_pass: true`（見 `metrics.json`）。  
+**軸向 P0 關閉**: 見 `P0_AXIAL_CLOSED.md`（含 signedness 核對與 primary 正典表述）。  
+**峰值正典**: \(k=\arg\max s[i]\)（有號，`np.argmax`）；S1/S2 落盤波形全非負，與 \(\arg\max|s|\) 重合。
 ---
 
 ## 官方語意（文件來源）

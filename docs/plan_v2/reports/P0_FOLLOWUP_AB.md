@@ -141,5 +141,5 @@ stationarity_ok = (point_drift ≤ 0.05)
 | B primary 切換透明 | **本文件補齊** |
 | D2 橢圓 | **不納入 P0 關閉條件**（幾何層） |
 
-**建議狀態**：  
-**「軸向 P0 可關閉（含 A/B 已說明）」**；剩餘寫入 limitation：能量中段 QC、primary 單點切換、D2 圓近似。
+**後續**：signedness + primary 正典表述已在 `P0_AXIAL_CLOSED.md` 完成 → **軸向 P0 已正式關閉**。  
+limitation 仍寫：能量中段 QC、primary 單點切換、D2 圓近似（下一優先）。

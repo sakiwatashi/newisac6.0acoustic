@@ -6,7 +6,7 @@
 > **論文 docx 以本機為準**（預設不隨 push）；**`.pt` 權重不進 git**。
 
 
-## 2026-07-22 交接增量（論證閘門 + P0 感測鏈審計）
+## 2026-07-22 交接增量（論證閘門 + P0 感測鏈審計 + 軸向 P0 關閉）
 
 ### 完成
 1. **論文論證閘門**（補「合規全綠仍被論證層重寫」）：`docs/plan_v2/THESIS_ARGUMENTATION_GATES.md`  
@@ -17,13 +17,19 @@
    - 報告：`docs/plan_v2/reports/P0_GMO_CHAIN_AUDIT.md`  
    - 產物：`runtime/outputs/p0_gmo_chain_audit/{metrics.json,figures/}`  
    - 結論：way 不串接；scalar≠40kHz 載波；控制用 OLS；S1 峰=目標相關；S2 r≈0.9994 且斜率貼 sampleDuration
-3. **P0 可選 GPU dump（B）**：`scripts/p0_fixed_sensor_gmo_dump.py`（固定感測器、五距離×有無、整幀 GMO；**不否決**離線結論）
-4. **3.1 可貼段落（C）**：`thesis/P0_SECTION_3_1_PATCH.md`
+3. **P0 可選 GPU dump**：`scripts/p0_fixed_sensor_gmo_dump.py`
+4. **P0 follow-up A/B**：`docs/plan_v2/reports/P0_FOLLOWUP_AB.md`
+5. **Signedness + primary 正典表述 → 軸向 P0 正式關閉**  
+   - `docs/plan_v2/reports/P0_AXIAL_CLOSED.md`  
+   - `runtime/outputs/p0_gmo_chain_audit/p0_signedness_check.json`  
+   - 規則：\(k=\arg\max s[i]\)（有號）；primary=有號 max 較大 way（**非**固定 way0）  
+   - 正典 S1/S2 波形全非負 → 與 \|·\| 重合；CSV 與有號 argmax 一致
+6. **3.1 可貼段落**：`thesis/P0_SECTION_3_1_PATCH.md`（已改 primary／有號峰）
 
 ### 宣稱
-- 可：正文 3.1 收斂 P0，刪「待核對」語氣（貼 C 後過論證閘門）。  
-- 不可：因 P0 重跑 D1–D3；稱 40 kHz 原始波形；稱 way 串接為正典。
-
+- 可：軸向 P0 關閉；3.1 貼修訂稿。  
+- 不可：因 P0 重跑 D1–D3；稱 40 kHz 原始波形；稱 way 串接；稱已固定 way0 為正典；D2 橢圓已驗證。  
+- **下一優先**：D2 經驗距離 + 圓交會 vs 0.10 m 雙掛載橢圓近似。
 
 ## 2026-07-20 交接增量（GUI 平行入口 + README 對齊 + 本機論文資產）
 

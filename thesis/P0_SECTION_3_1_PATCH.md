@@ -1,10 +1,10 @@
-# 3.1 可貼段落（P0 收斂稿）— 2026-07-22
+# 3.1 可貼段落（P0 收斂稿）— 2026-07-22（signedness／primary 正典表述修訂）
 
 > **用途**：替換／收斂「技術核對版 3.1」中「待 P0」語氣。  
-> **證據**：`docs/plan_v2/reports/P0_GMO_CHAIN_AUDIT.md` + `runtime/outputs/p0_gmo_chain_audit/`  
+> **證據**：`docs/plan_v2/reports/P0_GMO_CHAIN_AUDIT.md`、`P0_FOLLOWUP_AB.md`、`P0_AXIAL_CLOSED.md` + `runtime/outputs/p0_gmo_chain_audit/`  
 > **閘門**：貼入前對本節跑 `docs/plan_v2/THESIS_ARGUMENTATION_GATES.md`（G0：只定義讀到什麼、為何能當距離）。  
-> **數字**以正典 S1/S2 為準；勿在貼入時改寫 D1–D3 結果。
-
+> **數字**以正典 S1/S2 為準；勿在貼入時改寫 D1–D3 結果。  
+> **軸向 P0 狀態**：已正式關閉（見 `P0_AXIAL_CLOSED.md`）。
 ---
 
 ## 建議 G0（貼入者自檢）
@@ -25,7 +25,13 @@
 
 **時間格與「40 kHz」之關係。** 感測參數中的中心頻率用於 WPM 脈衝／物理設定；GMO 波形時間取樣則由 `sampleDuration` 描述，schema 預設為 \(1.024\times 10^{-4}\) s（約 102.4 µs）。此取樣率約 9.8 kHz，**不足以、亦非設計用來**重建 40 kHz 實數載波。因此，本文稱 `scalar` 序列為「WPM 離散振幅響應」，不稱為「40 kHz 原始聲壓波形」。在本文 S2 距離掃描中，由峰值索引對已知距離之 OLS 斜率反推之有效樣本間隔約為 103 µs，與 schema 預設量級一致；斜率與單站近似 \(2/(c\,T)\) 之相對差小於 1%。該一致性支持「樣本索引隨往返傳播時間單調變化」之操作假設，但不構成實機 ToF 校正。
 
-**峰值與距離映射。** 在通過穩定度檢查的多幀平均序列上，取絕對值最大處之樣本索引 \(k\) 為候選峰。V2 實作曾以兩條 way 中振幅峰較大者為 primary；全距離掃描中僅約 0.59 m 一點會改選另一 way（確定性、三遍皆同），固定使用 way0 時線性擬合略優。正式表述可將主通道理解為**以 way 序數 0 為主的峰值索引**，並在限制中說明 primary 切換為罕見確定性現象。該峰值在感測包絡階段以目標存在／移除配對檢驗：在水平前視、0.10 m 立方目標之控制條件下，有目標時 \(k\) 隨距離單調外移，移除目標後全域最大峰不再沿同一距離軌跡移動（見第四章 S1）。其後在可偵測包絡內進行距離掃描（S2），建立
+**峰值與距離映射（正典規則）。** 在通過穩定度檢查的多幀平均序列上，峰值索引定義為
+
+\[
+k = \arg\max_i s[i]
+\]
+
+即**有號振幅**最大處之樣本索引（程式：`np.argmax(wf)`），**不是** \(\arg\max_i |s[i]|\)。primary way 之選擇為：兩條 way 的區塊平均波形中，**有號最大值**較大的一路（`np.max(wf0) ≥ np.max(wf1)` 則取 way0）。在本文 S1／S2 正典落盤波形上，全部樣本非負，故有號峰值與絕對值峰值**數值重合**；CSV 中的 `peak_sample_idx` 與有號 \(\arg\max\) 一致（見 `p0_signedness_check.json`）。全距離掃描中，primary 在絕大多數點為 way0，僅約 0.59 m 一點（三遍確定性）改選 way1；此為**實際部署規則**，不是「固定 way0」。固定 way0 僅作對照時線性擬合略優，**未**改寫正典管線。該峰值在感測包絡階段以目標存在／移除配對檢驗：在水平前視、0.10 m 立方目標之控制條件下，有目標時 \(k\) 隨距離單調外移，移除目標後全域最大峰不再沿同一距離軌跡移動（見第四章 S1）。其後在可偵測包絡內進行距離掃描（S2），建立
 \[
 \hat{d} = (k - b)/a
 \]
@@ -46,9 +52,9 @@
 | `timeOffsetNs` | way 時間偏移 | 正式資料中為 0 | 不用於測距 |
 | `numSamplesPerSgw` | 每 way 樣本數 | 320 | 切開 buffer |
 | `numElements` | 總元素數 | \(n_{\mathrm{ways}}\times 320\) | 完整性檢查 |
-| 峰值索引 \(k\) | （本文定義） | 隨目標距離移動；移除目標後改變 | OLS 距離映射輸入 |
+| 峰值索引 \(k\) | （本文定義） | \(k=\arg\max s[i]\)（有號）；正典數據上與 \(\arg\max|s|\) 重合 | OLS 距離映射輸入 |
+| primary way | （本文定義） | 兩路中 `max(s)` 較大者；多數 way0，d≈0.59 m 切 way1 | 取 \(k\) 的序列 |
 | \(\hat{d}=(k-b)/a\) | （本文定義） | S2 \(r\approx 0.9994\)（boresight 合併） | 閉環唯一距離輸入 |
-
 ---
 
 ## 定稿前刪除／降級句（避免開倒車）
@@ -68,4 +74,6 @@
 | scalar 非 40 kHz 載波 | `sampleDuration` 102.4 µs；S2 \(T_{\mathrm{cal}}\approx 103\) µs |
 | 峰為目標相關 | S1 with/without；`P0_GMO_CHAIN_AUDIT` fig1–2 |
 | 可編碼距離 | S2 r=0.9994；fig3、fig5 |
+| \(k=\)有號 argmax；與 \|·\| 在正典數據重合 | `p0_signedness_check.json`；`s2_datasheet_runner._peak_idx` |
+| primary 非固定 way0 | `P0_FOLLOWUP_AB.md`；僅 d≈0.59 m 切 way1 |
 | 控制用 OLS | `d1_approach_runner` / `d15_*` 啟動校正 |
