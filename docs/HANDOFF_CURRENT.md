@@ -29,8 +29,8 @@
 ### 宣稱
 - 可：軸向 P0 關閉；3.1 貼修訂稿。  
 - 不可：因 P0 重跑 D1–D3；稱 40 kHz 原始波形；稱 way 串接；稱已固定 way0 為正典；D2 橢圓已驗證。  
-- **下一優先（已做）**：D2 圓 vs 橢圓 → **保持圓正典**（`docs/plan_v2/reports/D2_CIRCLE_VS_ELLIPSE.md`）；\(\hat r\) 貼 \(R\) 不貼 \(L/2\)。
-## 2026-07-20 交接增量（GUI 平行入口 + README 對齊 + 本機論文資產）
+- **下一優先（已做）**：D2 圓 vs 橢圓 → **保持圓正典**（`docs/plan_v2/reports/D2_CIRCLE_VS_ELLIPSE.md`）；\(\hat r\) 貼 \(R\) 不貼 \(L/2\)。  
+- **給 GPT 回覆稿**：`docs/plan_v2/REPLY_TO_GPT_P0_CLOSED_AND_D2.md`## 2026-07-20 交接增量（GUI 平行入口 + README 對齊 + 本機論文資產）
 
 ### 完成（程式／文件 → 應進 git；論文 docx → 本機）
 1. **GUI 平行入口（不覆寫 headless 原檔）**
