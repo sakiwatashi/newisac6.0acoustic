@@ -73,6 +73,35 @@
       "1.089474": 0.009275717098611302,
       "1.144737": 0.006858101633663294,
       "1.2": 0.004312393887945909
+    },
+    "loo_kept_boot": {
+      "n_boot": 10000,
+      "seed": 20260722,
+      "method": "bootstrap resample of LOO point errors",
+      "mae_m": {
+        "point": 0.008245095029047508,
+        "mean_of_boots": 0.00824835584381929,
+        "ci95": [
+          0.005636725615102691,
+          0.011452809824346816
+        ]
+      },
+      "rmse_m": {
+        "point": 0.01326267971606513,
+        "mean_of_boots": 0.012976597479713635,
+        "ci95": [
+          0.006854936948252785,
+          0.018488073465252802
+        ]
+      },
+      "bias_m": {
+        "point": 0.00040322798528599074,
+        "mean_of_boots": 0.0003893834260792538,
+        "ci95": [
+          -0.0036680760848878825,
+          0.0038223161378986652
+        ]
+      }
     }
   },
   "p3": {
@@ -129,6 +158,29 @@
       ],
       "n_closed_le_10cm": 30,
       "n_blind_le_10cm": 4
+    }
+  },
+  "p3_meta": {
+    "delta_def": "e = |stop_oracle_horiz_dist - 0.35|; Delta = e_blind - e_closed",
+    "paired_permutation": {
+      "n_perm": 50000,
+      "seed": 0,
+      "type": "Monte Carlo sign-flip paired permutation",
+      "alternative": "H1: mean(Delta) > 0 (closed better)",
+      "p_formula": "p = (count(mean(sign*Delta) >= mean(Delta)) + 1) / (n_perm + 1)",
+      "note": "With n_perm=50000, resolution floor \u2248 2e-5 when count=0; report as p \u2264 2e-5"
+    },
+    "wilcoxon": {
+      "package": "scipy.stats.wilcoxon",
+      "alternative": "greater",
+      "zero_method": "wilcox"
+    },
+    "welch": {
+      "role": "pre-registered primary for thesis; one-sided closed better via normal approx on t"
+    },
+    "bootstrap_delta_mean": {
+      "n_boot": 5000,
+      "seed": 0
     }
   }
 }

@@ -32,6 +32,9 @@
 - **下一優先（已做）**：D2 圓 vs 橢圓 → **保持圓正典**（`docs/plan_v2/reports/D2_CIRCLE_VS_ELLIPSE.md`）；\(\hat r\) 貼 \(R\) 不貼 \(L/2\)。  
 - **給 GPT 回覆稿**：`docs/plan_v2/REPLY_TO_GPT_P0_CLOSED_AND_D2.md`
 - **給 GPT（3.2–5.1 任務回報）**：`docs/plan_v2/REPLY_TO_GPT_3_2_TO_5_1.md`  
+
+- **3.2–5.1 審查關閉**（2026-07-22 封口）：`docs/plan_v2/SECTION_3_2_TO_5_1_REVIEW_CLOSED.md`
+- **5.2 審查進行中**：`docs/plan_v2/reviews/REVIEW_5_2_D15.md`
 - **GPT 論文敘事整合稿（1–5.1）**：`thesis/THESIS_CH1_TO_5_1_GPT_INTEGRATED.md`
   - 分件：`THESIS_CH1_TO_3_1_GPT_INTEGRATED.md`（～3.1）＋來源 `thesis/sources/THESIS_CH*_GPT_SOURCE.docx`
   - 3.2–5.1 來源：`論文優化替換稿_3.2至5.1.docx` → `thesis/sources/THESIS_CH3_2_TO_5_1_GPT_SOURCE.docx`

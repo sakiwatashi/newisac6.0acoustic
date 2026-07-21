@@ -1,37 +1,40 @@
 # S2 距離編碼：未見距離交叉驗證（P2）
 
-**日期**: 2026-07-22  
+**日期**: 2026-07-22（封口修訂：CI 數字 + 用詞）  
 **性質**: 零 GPU；既有 `v2_s2_datasheet`  
-**產物**: `runtime/outputs/thesis_32_51_audit/audit_metrics.json`、`s2_loo_errors_kept.csv`  
-**結論**: 1.21 cm / 1.10 cm 為**校正內殘差**；leave-one-**distance**-out CV RMSE 同量級（約 1.2–1.3 cm），可稱為**距離插值驗證**（非實機、非跨場景）。
+**產物**: `runtime/outputs/thesis_32_51_audit/audit_metrics.json`、`s2_loo_errors_kept.csv`
+
+---
+
+## 結論（封口）
+
+| 量 | kept-48 | all-60 |
+|----|--------:|-------:|
+| 校正內殘差 RMSE | **1.21 cm** | **1.10 cm** |
+| **LOO-distance** RMSE（point） | **1.33 cm** | **1.19 cm** |
+| LOO MAE（point） | 0.82 cm | 0.73 cm |
+| LOO max \|err\| | 4.59 cm | 4.60 cm |
+| LOO bias（point） | +0.04 cm | +0.03 cm |
+
+**Bootstrap 95% CI**（對 LOO **逐點誤差**重抽樣；`n_boot=10000`，`seed=20260722`）：
+
+| 量（kept-48 LOO） | point | 95% CI |
+|-------------------|------:|--------|
+| MAE | 0.82 cm | **[0.56, 1.15] cm** |
+| RMSE | 1.33 cm | **[0.69, 1.85] cm** |
+| bias | +0.04 cm | **[−0.37, +0.38] cm** |
+
+最大絕對誤差位於 **d≈0.592 m**（primary-way 切換點），其餘距離平均絕對誤差多在 1 cm 內。
 
 ---
 
 ## 方法
 
-- 單位：獨特 `true_distance_3d_m`（**禁止**以 p1/p2/p3 當 fold——三遍 peak 逐位相同）。  
-- LOO：hold-out 一個距離之全部紀錄，其餘距離擬合 \(k=ad+b\)，預測 hold-out 之 \(\hat d=(k-b)/a\)。  
-- 另報：奇偶 `point_index` train/test；kept-48 與 all-60。
-
----
-
-## 結果
-
-| 分析 | n 預測 | MAE | RMSE | max\|err\| | bias |
-|------|-------:|----:|-----:|----------:|-----:|
-| **LOO 距離（kept 48）** | 48 | **0.82 cm** | **1.33 cm** | 4.59 cm | +0.04 cm |
-| LOO 距離（all 60） | 60 | 0.73 cm | 1.19 cm | 4.60 cm | +0.03 cm |
-| 奇偶 idx（kept） | 24 test | 0.47 cm | 0.57 cm | 0.99 cm | +0.27 cm |
-| 奇偶 idx（all） | 30 test | 0.49 cm | 0.58 cm | 0.96 cm | +0.30 cm |
-
-**校正內（同資料擬合）對照**
-
-| 集合 | Pearson r | 殘差 RMSE |
-|------|----------:|----------:|
-| kept 48 | 0.99941 | **1.21 cm** |
-| all 60 | 0.99940 | **1.10 cm** |
-
-LOO 最大絕對誤差 ≈ **4.6 cm** 出現在 **d≈0.592 m**（與 primary-way 切換點一致），其餘距離平均絕對誤差多在 1 cm 內。
+- 單位：獨特 `true_distance_3d_m`（**禁止**以 p1/p2/p3 當 fold）。  
+- LOO：hold-out 一距離之全部紀錄 → 其餘擬合 \(k=ad+b\) → \(\hat d=(k-b)/a\)。  
+- 首尾距離被留出時含**有限外插**，故不稱「純插值驗證」，而稱：  
+  **「距離網格 leave-one-distance-out 驗證」**。  
+- Bootstrap：對 LOO 得到的誤差向量做有放回重抽，報 MAE／RMSE／bias 的 2.5–97.5 百分位。
 
 ---
 
@@ -39,12 +42,15 @@ LOO 最大絕對誤差 ≈ **4.6 cm** 出現在 **d≈0.592 m**（與 primary-wa
 
 | 可寫 | 不可寫 |
 |------|--------|
-| 校正資料內殘差 RMSE 1.21 cm（kept） | 「測距精度 1.21 cm」不附條件 |
-| leave-one-distance-out 插值 RMSE ≈ 1.3 cm | 實機／未見場景精度 |
-| 高 r 不依賴排除 12 點（all-60 仍 r≈0.9994） | 排除製造了線性 |
+| 校正資料內殘差 RMSE 1.21 cm（kept） | 不附條件的「測距精度 1.21 cm」 |
+| 距離網格 LOO 驗證 RMSE 1.33 cm（95% CI 見上） | 實機／跨場景精度 |
+| 高 r 不依賴排除 12 點 | 排除製造了線性 |
 
 ---
 
 ## 重現
 
-見 `runtime/outputs/thesis_32_51_audit/audit_metrics.json` 之 `p2` 欄（由本輪審計腳本生成；後續可固化為 `scripts/s2_distance_cv.py`）。
+```bash
+# 數字見
+python3 -c "import json;print(json.load(open('runtime/outputs/thesis_32_51_audit/audit_metrics.json'))['p2']['loo_kept_boot'])"
+```
