@@ -2,14 +2,16 @@
 
 > 新讀者先看本頁。研究日誌見 `docs/plan_v2/PROGRESS.md`；舊管線交接見 `docs/handoff/`（**不支撐論文主結論**）。
 
-**最後更新**: 2026-07-22（**軸向 P0 正式關閉**；signedness + primary 正典表述）  
+**最後更新**: 2026-07-22（軸向 P0 關閉 + D2 圓/橢圓裁定）  
 **公開倉庫**: https://github.com/sakiwatashi/isaacsimacousticfinal （對版本請用 commit SHA，勿只看 HTML 快取）  
 **本機完整工作樹**: 含論文 `thesis/`（口試前不上公開倉）  
-**接手入口**: `docs/HANDOFF_CURRENT.md` · **論證閘門**: `docs/plan_v2/THESIS_ARGUMENTATION_GATES.md` · **P0 關閉**: `docs/plan_v2/reports/P0_AXIAL_CLOSED.md`
+**接手入口**: `docs/HANDOFF_CURRENT.md` · **P0**: `docs/plan_v2/reports/P0_AXIAL_CLOSED.md` · **D2 幾何**: `docs/plan_v2/reports/D2_CIRCLE_VS_ELLIPSE.md`
 
 ## 一句話
 
-在 Isaac Sim 6.0 RTX Acoustic 中，以包絡優先 + 三臂消融 + 預註冊判準，完成 S1→S2→D1→D1.5→D3→D2 全鏈；**實驗判準全綠**；**軸向 P0（GMO→峰→距離）正式關閉**。下一優先：D2 圓／橢圓。主限制為單 seed、確定性引擎、非摩擦夾持、無實機。## 一鍵驗證
+在 Isaac Sim 6.0 RTX Acoustic 中，以包絡優先 + 三臂消融 + 預註冊判準，完成 S1→S2→D1→D1.5→D3→D2 全鏈；**實驗判準全綠**；**軸向 P0 關閉**；**D2 圓交會與 OLS 單站觀測匹配（維持圓，不改橢圓）**。主限制為單 seed、確定性引擎、非摩擦夾持、無實機。
+
+## 一鍵驗證
 
 ```bash
 bash runtime/verify_all.sh   # 零 GPU；exit 0 = 全部當場重算通過
