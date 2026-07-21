@@ -35,6 +35,7 @@
 
 - **3.2–5.1 審查關閉**（2026-07-22 封口）：`docs/plan_v2/SECTION_3_2_TO_5_1_REVIEW_CLOSED.md`
 - **5.2 審查進行中**：`docs/plan_v2/reviews/REVIEW_5_2_D15.md`
+- **請 GPT 審 5.2+**：`docs/plan_v2/REPLY_TO_GPT_PLEASE_REVIEW_5_2_PLUS.md`（原文摘錄 `thesis/THESIS_5_2_TO_6_4_FORMAL_EXTRACT.md`；5.2 建議稿 `THESIS_5_2_REPLACEMENT_DRAFT.md`）
 - **GPT 論文敘事整合稿（1–5.1）**：`thesis/THESIS_CH1_TO_5_1_GPT_INTEGRATED.md`
   - 分件：`THESIS_CH1_TO_3_1_GPT_INTEGRATED.md`（～3.1）＋來源 `thesis/sources/THESIS_CH*_GPT_SOURCE.docx`
   - 3.2–5.1 來源：`論文優化替換稿_3.2至5.1.docx` → `thesis/sources/THESIS_CH3_2_TO_5_1_GPT_SOURCE.docx`
