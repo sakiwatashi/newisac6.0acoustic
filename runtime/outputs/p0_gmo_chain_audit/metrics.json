@@ -1,0 +1,165 @@
+{
+  "official_semantics": {
+    "signal_way": "TX\u2192RX\u2192channel waveform; NOT a time shard to concatenate",
+    "scalar": "amplitude sample (not 40 kHz carrier ADC stream)",
+    "sampleDuration_schema_us": 102.39999999999999,
+    "numSamplesPerSgw_expected": 320,
+    "sources": [
+      "app/standalone_examples/.../inspect_acoustic_gmo.py",
+      "app/extscache/omni.sensors.nv.acoustic-*/docs/acoustic_extension.rst"
+    ]
+  },
+  "s1": {
+    "with_peak_vs_distance": {
+      "slope": 56.29629629629629,
+      "intercept": -3.8148148148148167,
+      "pearson_r": 0.9999167747206766
+    },
+    "without_peak_vs_distance_pearson_r": NaN,
+    "without_peak_mostly_fixed": true,
+    "gate_with_tracks_distance": true,
+    "gate_without_not_same_track": true,
+    "rows_size_0p10": [
+      {
+        "cell_id": "A_d0.15_z0.10_p0_cnone",
+        "distance_m": 0.15,
+        "size_m": 0.1,
+        "with_peak_idx": 5.0,
+        "without_peak_idx": 304.0,
+        "snr_peak": 67.13381959959482,
+        "detectable": true
+      },
+      {
+        "cell_id": "A_d0.3_z0.10_p0_cnone",
+        "distance_m": 0.3,
+        "size_m": 0.1,
+        "with_peak_idx": 13.0,
+        "without_peak_idx": 304.0,
+        "snr_peak": 147.90671004320427,
+        "detectable": true
+      },
+      {
+        "cell_id": "A_d0.5_z0.10_p0_cnone",
+        "distance_m": 0.5,
+        "size_m": 0.1,
+        "with_peak_idx": 24.0,
+        "without_peak_idx": 304.0,
+        "snr_peak": 94.440529565902,
+        "detectable": true
+      },
+      {
+        "cell_id": "A_d0.8_z0.10_p0_cnone",
+        "distance_m": 0.8,
+        "size_m": 0.1,
+        "with_peak_idx": 41.0,
+        "without_peak_idx": 304.0,
+        "snr_peak": 67.25632887737413,
+        "detectable": true
+      },
+      {
+        "cell_id": "A_d1.2_z0.10_p0_cnone",
+        "distance_m": 1.2,
+        "size_m": 0.1,
+        "with_peak_idx": 64.0,
+        "without_peak_idx": 304.0,
+        "snr_peak": 86.5355396671331,
+        "detectable": true
+      }
+    ]
+  },
+  "s2": {
+    "summary_combined": {
+      "label": "combined_p1_p3",
+      "n_total": 60,
+      "n_kept": 48,
+      "n_excluded_drift": 12,
+      "excluded_point_indices": [
+        "6",
+        "9",
+        "10",
+        "11",
+        "6",
+        "9",
+        "10",
+        "11",
+        "6",
+        "9",
+        "10",
+        "11"
+      ],
+      "slope_sample_per_m": 56.56241411531907,
+      "intercept_samples": -4.070356730610676,
+      "pearson_r": 0.9994126335585268,
+      "t_cal_s": 0.00010308795834278672,
+      "t_cal_us": 103.08795834278672,
+      "distance_rmse_m": 0.012075629974891753
+    },
+    "p1_ols": {
+      "n_kept": 16,
+      "slope": 56.56241411531907,
+      "intercept": -4.070356730610676,
+      "pearson_r": 0.9994126335585266,
+      "t_cal_us": 103.08795834278672,
+      "schema_sample_duration_us": 102.39999999999999,
+      "monostatic_theory_slope": 56.94241982507289,
+      "slope_ratio_measured_over_theory": 0.9933264917275874
+    },
+    "dual_way": [
+      {
+        "tag": "point_05",
+        "rx0_peak_idx": 20,
+        "rx1_peak_idx": 17,
+        "rx0_peak_abs": 76.32227261861166,
+        "rx1_peak_abs": 63.92756541570027,
+        "corr": 0.016925493636880787,
+        "identical": false,
+        "n_samples": 320
+      },
+      {
+        "tag": "point_10",
+        "rx0_peak_idx": 36,
+        "rx1_peak_idx": 33,
+        "rx0_peak_abs": 53.10045925776164,
+        "rx1_peak_abs": 47.36945597330729,
+        "corr": 0.025146472139893673,
+        "identical": false,
+        "n_samples": 320
+      },
+      {
+        "tag": "point_15",
+        "rx0_peak_idx": 51,
+        "rx1_peak_idx": 49,
+        "rx0_peak_abs": 50.71616665522257,
+        "rx1_peak_abs": 46.73798735936483,
+        "corr": 0.012335473861122142,
+        "identical": false,
+        "n_samples": 320
+      }
+    ],
+    "concat_negative_control": {
+      "tag": "point_05",
+      "concat_peak_idx": 20,
+      "rx0_len": 320,
+      "note": "If ways were time-contiguous segments, concat peak index would be meaningful; NVIDIA defines each way as a full TX-RX waveform of length numSamplesPerSgw."
+    },
+    "gate_r_ge_0_95": true,
+    "gate_slope_near_schema": true,
+    "gate_ways_not_identical": true
+  },
+  "figures": [
+    "/home/lab109/song/isaacsim6.0/runtime/outputs/p0_gmo_chain_audit/figures/fig1_s1_peak_with_without.png",
+    "/home/lab109/song/isaacsim6.0/runtime/outputs/p0_gmo_chain_audit/figures/fig2_s1_waveform_with_without_0p5m.png",
+    "/home/lab109/song/isaacsim6.0/runtime/outputs/p0_gmo_chain_audit/figures/fig3_s2_peak_vs_distance.png",
+    "/home/lab109/song/isaacsim6.0/runtime/outputs/p0_gmo_chain_audit/figures/fig4_s2_dual_ways_separate.png",
+    "/home/lab109/song/isaacsim6.0/runtime/outputs/p0_gmo_chain_audit/figures/fig5_s2_primary_overlay_distances.png"
+  ],
+  "adjudication": {
+    "p0_1_way_semantics_not_concat": true,
+    "p0_2_scalar_not_40khz_carrier": true,
+    "p0_3_control_uses_ols_not_bare_tof": true,
+    "p0_3_slope_consistent_with_sampleDuration": true,
+    "p0_4_peak_is_target_related": true,
+    "p0_4_distance_encoding_stable": true,
+    "all_offline_gates_pass": true
+  }
+}

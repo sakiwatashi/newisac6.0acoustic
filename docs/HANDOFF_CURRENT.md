@@ -1,9 +1,28 @@
-# 專案交接文件(現況版,2026-07-20 更新)— 給任何接手的 AI/人
+# 專案交接文件(現況版,2026-07-22 更新)— 給任何接手的 AI/人
 
 > 讀我就夠開工。歷史細節按需往下挖,不必預讀。
 > 舊版交接(`docs/plan_v2/V2_HANDOFF_FOR_NEXT_AI.md`)是 7/8 開工前的計畫書,僅供考古。
 > **公開 git remote：** `newisac` → `https://github.com/sakiwatashi/newisac6.0acoustic.git`  
 > **論文 docx 以本機為準**（預設不隨 push）；**`.pt` 權重不進 git**。
+
+
+## 2026-07-22 交接增量（論證閘門 + P0 感測鏈審計）
+
+### 完成
+1. **論文論證閘門**（補「合規全綠仍被論證層重寫」）：`docs/plan_v2/THESIS_ARGUMENTATION_GATES.md`  
+   - G0 節職能 → G1 論證鏈 → G2 減肥 → G3 主張–證據 → G4 尺度 → G5 句服務職能 → G6 章串線  
+   - **三層全綠才算論述可對外**：實驗鐵律 / 數字合規 / **論證閘門**
+2. **P0 離線審計（A，零 GPU，已全過）**  
+   - 腳本：`scripts/p0_gmo_chain_offline_audit.py`  
+   - 報告：`docs/plan_v2/reports/P0_GMO_CHAIN_AUDIT.md`  
+   - 產物：`runtime/outputs/p0_gmo_chain_audit/{metrics.json,figures/}`  
+   - 結論：way 不串接；scalar≠40kHz 載波；控制用 OLS；S1 峰=目標相關；S2 r≈0.9994 且斜率貼 sampleDuration
+3. **P0 可選 GPU dump（B）**：`scripts/p0_fixed_sensor_gmo_dump.py`（固定感測器、五距離×有無、整幀 GMO；**不否決**離線結論）
+4. **3.1 可貼段落（C）**：`thesis/P0_SECTION_3_1_PATCH.md`
+
+### 宣稱
+- 可：正文 3.1 收斂 P0，刪「待核對」語氣（貼 C 後過論證閘門）。  
+- 不可：因 P0 重跑 D1–D3；稱 40 kHz 原始波形；稱 way 串接為正典。
 
 
 ## 2026-07-20 交接增量（GUI 平行入口 + README 對齊 + 本機論文資產）
