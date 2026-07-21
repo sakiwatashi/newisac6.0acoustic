@@ -36,6 +36,7 @@ runtime/outputs/*
 !runtime/outputs/lab_sl_distance_v1/
 !runtime/outputs/p0_gmo_chain_audit/
 !runtime/outputs/d2_circle_vs_ellipse/
+!runtime/outputs/thesis_32_51_audit/
 runtime/outputs/**/repeat_*/
 runtime/outputs/**/*_timeseries.csv
 runtime/outputs/**/batch_summary.txt
