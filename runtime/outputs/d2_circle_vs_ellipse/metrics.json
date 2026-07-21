@@ -1,0 +1,87 @@
+{
+  "mount_spacing_m": 0.1,
+  "mount_axis": "sensor forward +X (m002 = m001 + (0.10,0,0))",
+  "synthetic": {
+    "n_delta": 175,
+    "delta_L2_minus_R_mean_m": -0.043607087359521284,
+    "delta_L2_minus_R_std_m": 0.0025731630563412657,
+    "delta_L2_minus_R_min_m": -0.0469695256601127,
+    "delta_L2_minus_R_max_m": -0.03473745236555381,
+    "delta_abs_max_m": 0.0469695256601127,
+    "rmse_loc_mono_circle_m": 8.058356971601664e-16,
+    "rmse_loc_halfL_as_circle_m": 0.0494597136969089,
+    "rmse_loc_ellipse_m": 0.044246230786355055,
+    "mean_err_halfL_as_circle_m": 0.049459123741741454,
+    "mean_err_ellipse_m": 0.043764778414964026
+  },
+  "formal_closed": {
+    "n_vantage_meas": 150,
+    "n_episodes": 30,
+    "range_vs_mono_R": {
+      "name": "range_est - R_mono",
+      "n": 150,
+      "bias_m": 0.0011951482596859475,
+      "rmse_m": 0.014593508081400529,
+      "pearson_r_est_vs_pred": 0.9669941351246433
+    },
+    "range_vs_L_over_2": {
+      "name": "range_est - L/2",
+      "n": 150,
+      "bias_m": 0.04484384918467652,
+      "rmse_m": 0.04707016993081185,
+      "pearson_r_est_vs_pred": 0.9683198791383126
+    },
+    "mean_abs_err_vs_R": 0.011968072144469056,
+    "mean_abs_err_vs_L2": 0.04484384918467652,
+    "prefers_mono_R": true,
+    "loc_rmse_run_m": 0.03536834574168124,
+    "loc_rmse_re_est_m": 0.03528617112961354,
+    "loc_rmse_oracle_mono_circle_m": 2.8861562295903125e-16,
+    "loc_rmse_oracle_halfL_circle_m": 0.049435789497129276,
+    "loc_rmse_oracle_ellipse_m": 0.04461359814834351
+  },
+  "adjudication": {
+    "geometric_L2_minus_R_abs_max_m": 0.0469695256601127,
+    "geometric_L2_minus_R_abs_max_cm": 4.696952566011269,
+    "note_geometric_bias": "On-axis dual-mount along +X: L/2\u2212R \u2248 \u2212spacing/2 = \u22125 cm. This is geometric, not a bug; relevant only if raw ToF used without OLS.",
+    "synthetic_mono_circle_rmse_m": 8.058356971601664e-16,
+    "synthetic_halfL_as_circle_rmse_m": 0.0494597136969089,
+    "synthetic_ellipse_with_true_L_rmse_m": 0.044246230786355055,
+    "gate_matched_mono_circle_near_zero": true,
+    "gate_mismatched_halfL_circle_worse": true,
+    "formal": {
+      "n_vantage_meas": 150,
+      "n_episodes": 30,
+      "range_vs_mono_R": {
+        "name": "range_est - R_mono",
+        "n": 150,
+        "bias_m": 0.0011951482596859475,
+        "rmse_m": 0.014593508081400529,
+        "pearson_r_est_vs_pred": 0.9669941351246433
+      },
+      "range_vs_L_over_2": {
+        "name": "range_est - L/2",
+        "n": 150,
+        "bias_m": 0.04484384918467652,
+        "rmse_m": 0.04707016993081185,
+        "pearson_r_est_vs_pred": 0.9683198791383126
+      },
+      "mean_abs_err_vs_R": 0.011968072144469056,
+      "mean_abs_err_vs_L2": 0.04484384918467652,
+      "prefers_mono_R": true,
+      "loc_rmse_run_m": 0.03536834574168124,
+      "loc_rmse_re_est_m": 0.03528617112961354,
+      "loc_rmse_oracle_mono_circle_m": 2.8861562295903125e-16,
+      "loc_rmse_oracle_halfL_circle_m": 0.049435789497129276,
+      "loc_rmse_oracle_ellipse_m": 0.04461359814834351
+    },
+    "circle_matched_to_OLS_observation": true,
+    "recommendation": "KEEP circle multilateration as D2 canon. OLS range tracks monostatic R (formal RMSE 1.46 cm vs L/2 4.71 cm). Document geometric |L/2\u2212R|~spacing/2 as physics footnote; do not switch to ellipse unless peak is re-interpreted as raw bistatic ToF without OLS.",
+    "formal_range_prefers_mono_R": true,
+    "formal_range_vs_R_rmse_m": 0.014593508081400529,
+    "formal_range_vs_L2_rmse_m": 0.04707016993081185,
+    "formal_loc_rmse_run_m": 0.03536834574168124,
+    "circle_approx_adequate_for_D2_workspace": true
+  },
+  "note": "OLS maps peak\u2192empirical monostatic-like range; ellipse uses geometric L."
+}
