@@ -34,12 +34,12 @@
 - **GPT 論文敘事整合稿（1–5.1）**：`thesis/THESIS_CH1_TO_5_1_GPT_INTEGRATED.md`
   - 分件：`THESIS_CH1_TO_3_1_GPT_INTEGRATED.md`（～3.1）＋來源 `thesis/sources/THESIS_CH*_GPT_SOURCE.docx`
   - 3.2–5.1 來源：`論文優化替換稿_3.2至5.1.docx` → `thesis/sources/THESIS_CH3_2_TO_5_1_GPT_SOURCE.docx`
-- **3.2–5.1 第一批審計（2026-07-22）**：
+- **3.2–5.1 審計（2026-07-22）**：
   - S2 LOO-CV：`docs/plan_v2/reports/S2_DISTANCE_CV_REPORT.md`
   - D1/D1.5 配對：`docs/plan_v2/reports/D1_D15_PAIRED_SENSITIVITY.md`
   - 對照表：`docs/plan_v2/CLAIM_DATA_CODE_MAP_3_2_5_1.md`
   - 數字：`runtime/outputs/thesis_32_51_audit/`
-
+  - **P4 頻率**：`docs/plan_v2/reports/FREQUENCY_INVARIANCE_REPORT.md`；`armfree_freq_sweep/` 進 git；`verify_all` 缺檔失敗
 ## 2026-07-20 交接增量（GUI 平行入口 + README 對齊 + 本機論文資產）
 
 ### 完成（程式／文件 → 應進 git；論文 docx → 本機）

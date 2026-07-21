@@ -70,8 +70,8 @@ line; echo "▌D2 二維多點定位三臂"
 run_adj D2 0 bash -c 'python3 scripts/analyze_d2v2.py --scan-dir runtime/outputs/v2_d2v2_formal | grep -E "^ADJUDICATION"' 
 
 line; echo "▌側向四重證偽 + 頻率不變性(負結果重算)"
-python3 - <<'EOF'
-import csv, math, numpy as np, glob
+python3 - <<'EOF' || NFAIL=$((NFAIL+1))
+import csv, math, numpy as np, glob, os, sys
 # ILD + TDOA(S2 側向原始波形)
 rows=list(csv.DictReader(open('runtime/outputs/v2_s2_datasheet/lateral/points.csv')))
 def rank(v):
@@ -100,20 +100,29 @@ print(f"TDOA 時間差 Pearson r = {r:.3f}(恆定管線偏移 → 證偽 ✓)")
 d=list(csv.DictReader(open('runtime/outputs/rxgroup_probe_v1/dual/points.csv')))
 pk=[float(r['way1_peak_idx']) for r in d]
 print(f"rxGroup 分組後第二路峰值範圍 {min(pk):.0f}–{max(pk):.0f}(未定義噪音 → 證偽 ✓)")
-# 頻率不變性(峰值序列逐位比對 + 能量相對差;數據不在時明示略過)
-import os
-if not glob.glob('runtime/outputs/armfree_freq_sweep/freq_*hz/armfree_proximity_sweep.csv'):
-    print("頻率掃描:數據未含於本快照——略過(完整數據於原始工作目錄)")
-else:
-    pk_sets=set(); emax=0.0
-    for f in sorted(glob.glob('runtime/outputs/armfree_freq_sweep/freq_*hz/armfree_proximity_sweep.csv')):
-        rs=list(csv.DictReader(open(f)))
-        pk_sets.add(tuple(r['peak_sample_idx'] for r in rs))
-        e=[float(r['early_energy']) for r in rs]
-        if 'eref' not in dir(): eref=e
-        emax=max(emax, max(abs(a-b)/max(abs(b),1e-12) for a,b in zip(e,eref)))
-    print(f"頻率掃描 20–100 kHz:峰值序列種類={len(pk_sets)}(1=逐位相同 ✓)、能量最大相對差={emax:.1e}(浮點尾數級 ✓)")
+# 頻率不變性: 正典六檔必備, 缺檔或峰值序列不一致 → exit 1
+req_hz = [20000, 30000, 40000, 60000, 80000, 100000]
+paths = []
+for hz in req_hz:
+    pth = f'runtime/outputs/armfree_freq_sweep/freq_{hz}hz/armfree_proximity_sweep.csv'
+    if not os.path.isfile(pth):
+        print(f"頻率掃描:缺正典檔 {pth} → FAIL")
+        sys.exit(1)
+    paths.append(pth)
+pk_sets=set(); emax=0.0; eref=None
+for f in paths:
+    rs=list(csv.DictReader(open(f)))
+    pk_sets.add(tuple(r['peak_sample_idx'] for r in rs))
+    e=[float(r['early_energy']) for r in rs]
+    if eref is None: eref=e
+    emax=max(emax, max(abs(a-b)/max(abs(b),1e-12) for a,b in zip(e,eref)))
+print(f"頻率掃描 20–100 kHz:峰值序列種類={len(pk_sets)}(1=逐位相同 ✓)、能量最大相對差={emax:.1e}(浮點尾數級 ✓)")
+if len(pk_sets)!=1 or emax>=1e-5:
+    print("頻率掃描:ADJUDICATION peak_invariant: False")
+    sys.exit(1)
+print("頻率掃描:ADJUDICATION peak_invariant: True")
 EOF
+
 
 line; echo "▌姿態稽核總帳(『姿勢不對』的直接答案:全部實驗每一步的稽核統計)"
 python3 - <<'EOF'

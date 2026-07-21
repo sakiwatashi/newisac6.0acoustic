@@ -1,0 +1,89 @@
+{
+  "frequencies_hz": [
+    20000,
+    30000,
+    40000,
+    60000,
+    80000,
+    100000
+  ],
+  "n_distance_points": 20,
+  "oracle_distances_m": [
+    0.2,
+    0.26842105263157895,
+    0.33684210526315794,
+    0.4052631578947369,
+    0.4736842105263158,
+    0.5421052631578948,
+    0.6105263157894738,
+    0.6789473684210527,
+    0.7473684210526317,
+    0.8157894736842106,
+    0.8842105263157896,
+    0.9526315789473685,
+    1.0210526315789474,
+    1.0894736842105264,
+    1.1578947368421053,
+    1.2263157894736842,
+    1.2947368421052632,
+    1.3631578947368421,
+    1.431578947368421,
+    1.5
+  ],
+  "peak_index_sequences_identical": true,
+  "n_unique_peak_sequences": 1,
+  "early_energy_max_rel_diff_vs_40kHz": 6.466509528247665e-07,
+  "early_energy_max_rel_diff_by_freq": {
+    "100000": 4.2524641855691993e-07,
+    "20000": 4.286694009945881e-07,
+    "30000": 4.320225564875838e-07,
+    "40000": 0.0,
+    "60000": 4.774565846838579e-07,
+    "80000": 6.466509528247665e-07
+  },
+  "files": [
+    {
+      "center_frequency_hz": 100000,
+      "n_points": 20,
+      "sha256_16": "4a15e65bf10f02ca",
+      "peak_seq_hash": "0046f4221120972a"
+    },
+    {
+      "center_frequency_hz": 20000,
+      "n_points": 20,
+      "sha256_16": "a30d6bd924abbc44",
+      "peak_seq_hash": "0046f4221120972a"
+    },
+    {
+      "center_frequency_hz": 30000,
+      "n_points": 20,
+      "sha256_16": "0b948ab82e90368e",
+      "peak_seq_hash": "0046f4221120972a"
+    },
+    {
+      "center_frequency_hz": 40000,
+      "n_points": 20,
+      "sha256_16": "e8c7e291466afad0",
+      "peak_seq_hash": "0046f4221120972a"
+    },
+    {
+      "center_frequency_hz": 60000,
+      "n_points": 20,
+      "sha256_16": "adc9fc0f861dbb90",
+      "peak_seq_hash": "0046f4221120972a"
+    },
+    {
+      "center_frequency_hz": 80000,
+      "n_points": 20,
+      "sha256_16": "6760a2915256415a",
+      "peak_seq_hash": "0046f4221120972a"
+    }
+  ],
+  "adjudication": {
+    "peak_invariant": true,
+    "energy_diff_float_tail": true,
+    "claim_allowed": "In the tested scene/distances/GMO features, changing centerFrequency produced no discriminable peak-index change; energy diffs at float-tail scale.",
+    "claim_forbidden": "RTX Acoustic has no frequency physics in all modules/scenarios."
+  },
+  "scene_note": "Historical armfree proximity sweep; fixed target distances along forward axis (see CSV oracle_distance_m). Exact USD snapshot may not be in repo; CSV is the canon measurable product."
+}

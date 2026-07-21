@@ -15,7 +15,7 @@
 | all-60 r/RMSE | audit / P0 AB | — | 對 |
 | primary 0.592 m 切 | P0_FOLLOWUP_AB | — | 對 |
 | 側向 ρ=0.357 | S2 lateral | analyze_s2 | 對 |
-| 頻率 peak 不變 | armfree_freq_sweep | 診斷級 | 保守寫 |
+| 頻率 peak 不變 | armfree_freq_sweep 六 CSV | verify_all 硬檢查 | **P4 正典**；禁全稱 |
 | 聲影唯一因果 | — | 無單因子 | **禁止**；降級 |
 | D1 起點 x=0 | steps.csv | SENSOR_POS | 對 |
 | D1 r=0.997, MAE 2.1 | episodes | analyze_d1 | 對 |
