@@ -31,7 +31,9 @@
 - 不可：因 P0 重跑 D1–D3；稱 40 kHz 原始波形；稱 way 串接；稱已固定 way0 為正典；D2 橢圓已驗證。  
 - **下一優先（已做）**：D2 圓 vs 橢圓 → **保持圓正典**（`docs/plan_v2/reports/D2_CIRCLE_VS_ELLIPSE.md`）；\(\hat r\) 貼 \(R\) 不貼 \(L/2\)。  
 - **給 GPT 回覆稿**：`docs/plan_v2/REPLY_TO_GPT_P0_CLOSED_AND_D2.md`  
-- **GPT 第一章～3.1 整合稿入庫**：`thesis/THESIS_CH1_TO_3_1_GPT_INTEGRATED.md`（原文 `thesis/sources/THESIS_CH1_TO_3_1_GPT_SOURCE.docx`；3.1 已換 P0 正典）
+- **GPT 論文敘事整合稿（1–5.1）**：`thesis/THESIS_CH1_TO_5_1_GPT_INTEGRATED.md`
+  - 分件：`THESIS_CH1_TO_3_1_GPT_INTEGRATED.md`（～3.1）＋來源 `thesis/sources/THESIS_CH*_GPT_SOURCE.docx`
+  - 3.2–5.1 來源：`論文優化替換稿_3.2至5.1.docx` → `thesis/sources/THESIS_CH3_2_TO_5_1_GPT_SOURCE.docx`
 
 ## 2026-07-20 交接增量（GUI 平行入口 + README 對齊 + 本機論文資產）
 
